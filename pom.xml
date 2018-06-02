@@ -6,7 +6,7 @@
 
     <groupId>com.presisco</groupId>
     <artifactId>lazyjdbc</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 
     <properties>
         <kotlin.version>1.2.31</kotlin.version>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>com.presisco</groupId>
             <artifactId>toolbox</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.3</version>
         </dependency>
 
         <dependency>
@@ -35,7 +35,7 @@
     </dependencies>
 
     <build>
-        <sourceDirectory>${project.basedir}/src/com/presisco/lazyjdbc</sourceDirectory>
+        <sourceDirectory>src/main/kotlin/com/presisco/lazyjdbc</sourceDirectory>
         <testSourceDirectory>${project.basedir}/test/com/presisco/lazyjdbc</testSourceDirectory>
 
         <plugins>
