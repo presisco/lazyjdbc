@@ -1,11 +1,7 @@
 package com.presisco.lazyjdbc.client
 
-import com.presisco.toolbox.StringToolbox
 import java.sql.Connection
-import java.sql.PreparedStatement
 import java.sql.SQLException
-import java.sql.Statement
-import java.util.*
 import javax.sql.DataSource
 
 abstract class BaseJdbcClient(
@@ -46,6 +42,9 @@ abstract class BaseJdbcClient(
             = INSERT.replace("TABLENAME", wrapper + tableName + wrapper)
                 .replace("COLUMNS", StringToolbox.concat(columns, wrapper, ", "))
 
+    fun buildReplaceSql(tableName: String, columns: Collection<String>) = REPLACE.replace("TABLENAME", wrapper + tableName + wrapper)
+            .replace("COLUMNS", StringToolbox.concat(columns, wrapper, ", "))
+
     protected fun closeConnection(connection: Connection?) {
         if (connection != null) {
             try {
@@ -58,5 +57,6 @@ abstract class BaseJdbcClient(
 
     companion object {
         const val INSERT = "insert into TABLENAME(COLUMNS) values(PLACEHOLDERS)"
+        const val REPLACE = "replace into TABLENAME(COLUMNS) values(PLACEHOLDERS)"
     }
 }

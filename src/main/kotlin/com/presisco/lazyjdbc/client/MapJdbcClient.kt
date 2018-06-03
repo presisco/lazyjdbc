@@ -45,6 +45,12 @@ class MapJdbcClient(
         return columnTypeMap
     }
 
+    fun getColumnList(mapList: List<Map<String, Any?>>) = mapList[0].keys.toList()
+
+    fun getColumnTypeArray(columnList: List<String>, typeMap: Map<String, Int>) {
+
+    }
+
     fun insert(tableName: String, mapList: List<Map<String, Any?>>): Set<Int> {
         val failedSet = HashSet<Int>()
 
@@ -115,6 +121,57 @@ class MapJdbcClient(
             connection.close()
         }
         return resultList
+    }
+
+    protected fun executeBatch(sql: String, mapList: List<Map<String, Any?>>): Set<Int> {
+        val failedSet = HashSet<Int>()
+
+        val columnTypeMap = getColumnTypeMap(tableName)
+
+        val columnList = mapList[0].keys.toList()
+        val sqlTypeArray = Array(columnList.size, { 0 })
+        columnList.forEachIndexed { index, column -> sqlTypeArray[index] = columnTypeMap[column]!! }
+
+        val connection = getConnection()
+        val statement = connection.prepareStatement(sql)
+        val buffer = Array<Any?>(columnList.size, { null })
+        val java2sql = SqlTypedJava2SqlConvertion(sqlTypeArray)
+
+        try {
+            mapList.forEach { map ->
+
+                columnList.forEachIndexed { index, column -> buffer[index] = map[column] }
+                java2sql.bindArray(buffer, statement)
+
+                statement.addBatch()
+            }
+
+            val resultArray = statement.executeBatch()
+            if (resultArray.contains(Statement.EXECUTE_FAILED)) {
+                if (rollbackOnBatchFailure) {
+                    connection.rollback()
+                }
+                resultArray.forEachIndexed { i, result -> if (result == Statement.EXECUTE_FAILED) failedSet.add(i) }
+            }
+            connection.commit()
+        } catch (e: SQLException) {
+            throw RuntimeException("failed to insert maps", e)
+        } finally {
+            statement.close()
+            connection.close()
+        }
+        return failedSet
+    }
+
+    fun replace(tableName: String, sql: String, mapList: List<Map<String, Any?>>): Set<Int> {
+        if (mapList.isEmpty())
+            return setOf()
+        else
+            return executeBatch()
+    }
+    
+    fun delete(sql: String) {
+        executeSQL(sql)
     }
 
 }
