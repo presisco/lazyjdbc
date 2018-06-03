@@ -1,10 +1,11 @@
 package com.presisco.lazyjdbc.client
 
+import com.presisco.toolbox.StringToolbox
 import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
 
-abstract class BaseJdbcClient(
+abstract class BaseJdbcClient<T>(
         protected val dataSource: DataSource,
         protected val queryTimeoutSecs: Int = 2,
         protected val rollbackOnBatchFailure: Boolean = true
@@ -54,6 +55,14 @@ abstract class BaseJdbcClient(
             }
         }
     }
+
+    abstract fun select(sql: String): List<T>
+
+    abstract fun insert(tableName: String, dataList: List<T>): Set<Int>
+
+    abstract fun replace(tableName: String, dataList: List<T>): Set<Int>
+
+    abstract fun delete(sql: String)
 
     companion object {
         const val INSERT = "insert into TABLENAME(COLUMNS) values(PLACEHOLDERS)"

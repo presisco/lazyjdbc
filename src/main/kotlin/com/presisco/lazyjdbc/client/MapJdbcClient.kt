@@ -10,7 +10,7 @@ class MapJdbcClient(
         dataSource: DataSource,
         queryTimeoutSecs: Int = 2,
         rollbackOnBatchFailure: Boolean = true
-) : BaseJdbcClient(
+) : BaseJdbcClient<Map<String, Any?>>(
         dataSource,
         queryTimeoutSecs,
         rollbackOnBatchFailure
@@ -47,54 +47,7 @@ class MapJdbcClient(
 
     fun getColumnList(mapList: List<Map<String, Any?>>) = mapList[0].keys.toList()
 
-    fun getColumnTypeArray(columnList: List<String>, typeMap: Map<String, Int>) {
-
-    }
-
-    fun insert(tableName: String, mapList: List<Map<String, Any?>>): Set<Int> {
-        val failedSet = HashSet<Int>()
-
-        if (mapList.isEmpty())
-            return failedSet
-
-        val columnTypeMap = getColumnTypeMap(tableName)
-
-        val columnList = mapList[0].keys.toList()
-        val sqlTypeArray = Array(columnList.size, { 0 })
-        columnList.forEachIndexed { index, column -> sqlTypeArray[index] = columnTypeMap[column]!! }
-
-        val connection = getConnection()
-        val statement = connection.prepareStatement(buildInsertSql(tableName, columnList))
-        val buffer = Array<Any?>(columnList.size, { null })
-        val java2sql = SqlTypedJava2SqlConvertion(sqlTypeArray)
-
-        try {
-            mapList.forEach { map ->
-
-                columnList.forEachIndexed { index, column -> buffer[index] = map[column] }
-                java2sql.bindArray(buffer, statement)
-
-                statement.addBatch()
-            }
-
-            val resultArray = statement.executeBatch()
-            if (resultArray.contains(Statement.EXECUTE_FAILED)) {
-                if (rollbackOnBatchFailure) {
-                    connection.rollback()
-                }
-                resultArray.forEachIndexed { i, result -> if (result == Statement.EXECUTE_FAILED) failedSet.add(i) }
-            }
-            connection.commit()
-        } catch (e: SQLException) {
-            throw RuntimeException("failed to insert maps", e)
-        } finally {
-            statement.close()
-            connection.close()
-        }
-        return failedSet
-    }
-
-    fun select(sql: String): List<Map<String, Any?>> {
+    override fun select(sql: String): List<Map<String, Any?>> {
         val resultList = ArrayList<Map<String, Any?>>()
         val connection = getConnection()
         val statement = connection.createStatement()
@@ -123,12 +76,9 @@ class MapJdbcClient(
         return resultList
     }
 
-    protected fun executeBatch(sql: String, mapList: List<Map<String, Any?>>): Set<Int> {
+    fun executeBatch(sql: String, dataList: List<Map<String, Any?>>, columnList: List<String>, columnTypeMap: Map<String, Int>): Set<Int> {
         val failedSet = HashSet<Int>()
 
-        val columnTypeMap = getColumnTypeMap(tableName)
-
-        val columnList = mapList[0].keys.toList()
         val sqlTypeArray = Array(columnList.size, { 0 })
         columnList.forEachIndexed { index, column -> sqlTypeArray[index] = columnTypeMap[column]!! }
 
@@ -138,7 +88,7 @@ class MapJdbcClient(
         val java2sql = SqlTypedJava2SqlConvertion(sqlTypeArray)
 
         try {
-            mapList.forEach { map ->
+            dataList.forEach { map ->
 
                 columnList.forEachIndexed { index, column -> buffer[index] = map[column] }
                 java2sql.bindArray(buffer, statement)
@@ -163,14 +113,21 @@ class MapJdbcClient(
         return failedSet
     }
 
-    fun replace(tableName: String, sql: String, mapList: List<Map<String, Any?>>): Set<Int> {
-        if (mapList.isEmpty())
-            return setOf()
-        else
-            return executeBatch()
+    override fun insert(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
+        setOf()
+    } else {
+        val columnList = dataList[0].keys.toList()
+        executeBatch(buildInsertSql(tableName, columnList), dataList, columnList, getColumnTypeMap(tableName))
     }
-    
-    fun delete(sql: String) {
+
+    override fun replace(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
+        setOf()
+    } else {
+        val columnList = dataList[0].keys.toList()
+        executeBatch(buildReplaceSql(tableName, columnList), dataList, columnList, getColumnTypeMap(tableName))
+    }
+
+    override fun delete(sql: String) {
         executeSQL(sql)
     }
 
