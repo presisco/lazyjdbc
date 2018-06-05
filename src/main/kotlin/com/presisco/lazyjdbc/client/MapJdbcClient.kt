@@ -76,11 +76,25 @@ class MapJdbcClient(
         return resultList
     }
 
-    fun executeBatch(sql: String, dataList: List<Map<String, Any?>>, columnList: List<String>, columnTypeMap: Map<String, Int>): Set<Int> {
+    fun checkMissedColumns(columnList: List<String>, columnTypeMap: Map<String, Int>): Set<String> {
+        val missedSet = HashSet<String>()
+        columnList.forEach { column -> if (!columnTypeMap.containsKey(column)) missedSet.add(column) }
+        return missedSet
+    }
+
+    fun executeBatch(tableName: String, sql: String, dataList: List<Map<String, Any?>>, columnList: List<String>, columnTypeMap: Map<String, Int>): Set<Int> {
         val failedSet = HashSet<Int>()
 
         val sqlTypeArray = Array(columnList.size, { 0 })
-        columnList.forEachIndexed { index, column -> sqlTypeArray[index] = columnTypeMap[column]!! }
+
+        val missedSet = checkMissedColumns(columnList, columnTypeMap)
+        if (missedSet.isNotEmpty()) {
+            throw IllegalStateException("column type map mismatch for $tableName, missed $missedSet")
+        }
+
+        columnList.forEachIndexed { index, column ->
+            sqlTypeArray[index] = columnTypeMap[column]!!
+        }
 
         val connection = getConnection()
         val statement = connection.prepareStatement(sql)
@@ -117,14 +131,14 @@ class MapJdbcClient(
         setOf()
     } else {
         val columnList = dataList[0].keys.toList()
-        executeBatch(buildInsertSql(tableName, columnList), dataList, columnList, getColumnTypeMap(tableName))
+        executeBatch(tableName, buildInsertSql(tableName, columnList), dataList, columnList, getColumnTypeMap(tableName))
     }
 
     override fun replace(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
         setOf()
     } else {
         val columnList = dataList[0].keys.toList()
-        executeBatch(buildReplaceSql(tableName, columnList), dataList, columnList, getColumnTypeMap(tableName))
+        executeBatch(tableName, buildReplaceSql(tableName, columnList), dataList, columnList, getColumnTypeMap(tableName))
     }
 
     override fun delete(sql: String) {

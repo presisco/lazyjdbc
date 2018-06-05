@@ -41,10 +41,12 @@ abstract class BaseJdbcClient<T>(
 
     fun buildInsertSql(tableName: String, columns: Collection<String>)
             = INSERT.replace("TABLENAME", wrapper + tableName + wrapper)
-                .replace("COLUMNS", StringToolbox.concat(columns, wrapper, ", "))
+            .replace("COLUMNS", StringToolbox.concat(columns, wrapper, ", "))
+            .replace("PLACEHOLDERS", StringToolbox.concat("?", columns.size, ", "))
 
     fun buildReplaceSql(tableName: String, columns: Collection<String>) = REPLACE.replace("TABLENAME", wrapper + tableName + wrapper)
             .replace("COLUMNS", StringToolbox.concat(columns, wrapper, ", "))
+            .replace("PLACEHOLDERS", StringToolbox.concat("?", columns.size, ", "))
 
     protected fun closeConnection(connection: Connection?) {
         if (connection != null) {
