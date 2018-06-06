@@ -18,11 +18,12 @@ class SimpleSql2JavaConvertion : Sql2Java {
                 data[i] = when (columnSqlType) {
                     Types.CHAR, Types.VARCHAR, Types.LONGVARCHAR -> getString(index)
 
+                    Types.TINYINT -> getByte(index)
                     Types.SMALLINT -> getShort(index)
-                    Types.INTEGER -> getInt(index)
+                    Types.INTEGER, Types.DECIMAL -> getInt(index)
                     Types.BIGINT -> getLong(index)
 
-                    Types.FLOAT -> getFloat(index)
+                    Types.FLOAT, Types.REAL -> getFloat(index)
                     Types.DOUBLE, Types.NUMERIC, 2 -> getDouble(index)
 
                     Types.BOOLEAN -> getBoolean(index)
