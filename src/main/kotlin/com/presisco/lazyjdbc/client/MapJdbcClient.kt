@@ -71,7 +71,7 @@ class MapJdbcClient(
             throw RuntimeException("failed to execute sql: $sql", e)
         } finally {
             statement.close()
-            connection.close()
+            closeConnection(connection)
         }
         return resultList
     }
@@ -122,7 +122,7 @@ class MapJdbcClient(
             throw RuntimeException("failed to insert maps", e)
         } finally {
             statement.close()
-            connection.close()
+            closeConnection(connection)
         }
         return failedSet
     }

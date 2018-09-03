@@ -24,6 +24,7 @@ abstract class BaseJdbcClient<T>(
             "oracle" -> "\""
             else -> ""
         }
+        closeConnection(connection)
     }
 
     fun getConnection(): Connection {
@@ -36,7 +37,9 @@ abstract class BaseJdbcClient<T>(
         val connection = getConnection()
         val statement = connection.createStatement()
         statement.queryTimeout = queryTimeoutSecs
-        return statement.execute(query)
+        val result = statement.execute(query)
+        closeConnection(connection)
+        return result
     }
 
     fun buildInsertSql(tableName: String, columns: Collection<String>)
