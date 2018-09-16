@@ -12,6 +12,28 @@
         <kotlin.version>1.2.31</kotlin.version>
     </properties>
 
+    <repositories>
+
+        <repository>
+            <id>central-repos</id>
+            <name>Central Repository</name>
+            <url>http://repo.maven.apache.org/maven2</url>
+        </repository>
+
+        <repository>
+            <id>central-repos2</id>
+            <name>Central Repository 2</name>
+            <url>http://repo1.maven.org/maven2/</url>
+        </repository>
+
+        <repository>
+            <id>boundless</id>
+            <name>Boundless Repository</name>
+            <url>http://repo.boundlessgeo.com/main/</url>
+        </repository>
+
+    </repositories>
+
     <dependencies>
 
         <dependency>
@@ -31,6 +53,20 @@
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>3.2.0</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.oracle.jdbc</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.1.0.6.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
