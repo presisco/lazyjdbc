@@ -3,7 +3,7 @@ package sql
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import org.junit.Test
+import org.junit.Ignore
 import java.util.*
 
 class BaseJdbcClientTest {
@@ -15,7 +15,7 @@ class BaseJdbcClientTest {
             "maximumPoolSize" to "2"
     )
 
-    @Test
+    @Ignore
     fun databaseIdentify() {
         val props = Properties()
         props.putAll(oracleDataSource)
