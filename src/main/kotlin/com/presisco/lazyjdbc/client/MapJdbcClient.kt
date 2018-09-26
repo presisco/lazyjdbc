@@ -6,7 +6,7 @@ import java.sql.SQLException
 import java.sql.Statement
 import javax.sql.DataSource
 
-class MapJdbcClient(
+open class MapJdbcClient(
         dataSource: DataSource,
         queryTimeoutSecs: Int = 2,
         rollbackOnBatchFailure: Boolean = true
