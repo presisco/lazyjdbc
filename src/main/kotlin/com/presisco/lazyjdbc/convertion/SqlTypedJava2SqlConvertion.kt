@@ -5,11 +5,11 @@ import java.sql.PreparedStatement
 import java.sql.Time
 import java.sql.Timestamp
 
-class SqlTypedJava2SqlConvertion(
-        private val columnSqlTypeArray: Array<Int>
+class SqlTypedJava2SqlConversion(
+        private val columnSqlTypeArray: List<Int>
 ) : Java2Sql {
 
-    override fun bindArray(data: Array<*>, preparedStatement: PreparedStatement) {
+    override fun bindArray(data: List<*>, preparedStatement: PreparedStatement) {
         data.mapIndexed { i, value ->
             val index = i + 1
             val sqlType = columnSqlTypeArray[i]

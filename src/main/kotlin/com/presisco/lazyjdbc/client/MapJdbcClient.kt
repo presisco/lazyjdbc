@@ -1,7 +1,7 @@
 package com.presisco.lazyjdbc.client
 
 import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConvertion
-import com.presisco.lazyjdbc.convertion.SqlTypedJava2SqlConvertion
+import com.presisco.lazyjdbc.convertion.SqlTypedJava2SqlConversion
 import java.sql.SQLException
 import java.sql.Statement
 import javax.sql.DataSource
@@ -45,8 +45,6 @@ open class MapJdbcClient(
         return columnTypeMap
     }
 
-    fun getColumnList(mapList: List<Map<String, Any?>>) = mapList[0].keys.toList()
-
     override fun select(sql: String): List<Map<String, Any?>> {
         val resultList = ArrayList<Map<String, Any?>>()
         val connection = getConnection()
@@ -76,37 +74,29 @@ open class MapJdbcClient(
         return resultList
     }
 
-    fun checkMissedColumns(columnList: List<String>, columnTypeMap: Map<String, Int>): Set<String> {
-        val missedSet = HashSet<String>()
-        columnList.forEach { column -> if (!columnTypeMap.containsKey(column)) missedSet.add(column) }
-        return missedSet
-    }
-
-    fun executeBatch(tableName: String, sql: String, dataList: List<Map<String, Any?>>, columnList: List<String>, columnTypeMap: Map<String, Int>): Set<Int> {
+    fun executeBatch(tableName: String, sql: String, dataList: List<Map<String, Any?>>, columnTypeMap: Map<String, Int>): Set<Int> {
         val failedSet = HashSet<Int>()
 
-        val sqlTypeArray = Array(columnList.size, { 0 })
-
-        val missedSet = checkMissedColumns(columnList, columnTypeMap)
-        if (missedSet.isNotEmpty()) {
-            throw IllegalStateException("column type map mismatch for $tableName, missed $missedSet")
-        }
-
-        columnList.forEachIndexed { index, column ->
-            sqlTypeArray[index] = columnTypeMap[column]!!
-        }
+        val columnList = columnTypeMap.keys.toList()
+        val sqlTypeList = columnTypeMap.values.toList()
 
         val connection = getConnection()
         val statement = connection.prepareStatement(sql)
-        val buffer = Array<Any?>(columnList.size, { null })
-        val java2sql = SqlTypedJava2SqlConvertion(sqlTypeArray)
+        val sortedDataRow = arrayListOf<Any?>(columnList.size)
+        val java2sql = SqlTypedJava2SqlConversion(sqlTypeList)
 
         try {
             dataList.forEach { map ->
+                val columnMismatchSet = map.keys.minus(columnList)
+                if (columnMismatchSet.isNotEmpty()) {
+                    throw IllegalStateException("column type map mismatch for $tableName, missed $columnMismatchSet")
+                }
 
-                columnList.forEachIndexed { index, column -> buffer[index] = map[column] }
-                java2sql.bindArray(buffer, statement)
+                for (column in columnList) {
+                    sortedDataRow.add(map[column])
+                }
 
+                java2sql.bindArray(sortedDataRow, statement)
                 statement.addBatch()
             }
 
@@ -133,15 +123,15 @@ open class MapJdbcClient(
     override fun insert(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
         setOf()
     } else {
-        val columnList = dataList[0].keys.toList()
-        executeBatch(tableName, buildInsertSql(tableName, columnList), dataList, columnList, getColumnTypeMap(tableName))
+        val typeMap = getColumnTypeMap(tableName)
+        executeBatch(tableName, buildInsertSql(tableName, typeMap.keys), dataList, typeMap)
     }
 
     override fun replace(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
         setOf()
     } else {
-        val columnList = dataList[0].keys.toList()
-        executeBatch(tableName, buildReplaceSql(tableName, columnList), dataList, columnList, getColumnTypeMap(tableName))
+        val typeMap = getColumnTypeMap(tableName)
+        executeBatch(tableName, buildReplaceSql(tableName, typeMap.keys), dataList, typeMap)
     }
 
     override fun delete(sql: String) {
