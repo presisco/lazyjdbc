@@ -82,7 +82,7 @@ open class MapJdbcClient(
 
         val connection = getConnection()
         val statement = connection.prepareStatement(sql)
-        val sortedDataRow = arrayListOf<Any?>(columnList.size)
+        val sortedDataRow = ArrayList<Any?>(columnList.size)
         val java2sql = SqlTypedJava2SqlConversion(sqlTypeList)
 
         try {
@@ -98,6 +98,8 @@ open class MapJdbcClient(
 
                 java2sql.bindArray(sortedDataRow, statement)
                 statement.addBatch()
+
+                sortedDataRow.clear()
             }
 
             val resultArray = statement.executeBatch()
