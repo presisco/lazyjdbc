@@ -1,6 +1,6 @@
 package com.presisco.lazyjdbc.client
 
-import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConvertion
+import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConversion
 import com.presisco.lazyjdbc.convertion.SqlTypedJava2SqlConversion
 import java.sql.SQLException
 import java.sql.Statement
@@ -15,7 +15,7 @@ open class MapJdbcClient(
         queryTimeoutSecs,
         rollbackOnBatchFailure
 ) {
-    private val sql2Java = SimpleSql2JavaConvertion()
+    private val sql2Java = SimpleSql2JavaConversion()
     private val sqlTypeCache = HashMap<String, HashMap<String, Int>>()
 
     fun getColumnTypeMap(tableName: String): HashMap<String, Int> {

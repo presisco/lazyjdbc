@@ -5,7 +5,7 @@ import java.sql.PreparedStatement
 import java.sql.Time
 import java.sql.Timestamp
 
-class SimpleJava2SqlConvertion : Java2Sql {
+class SimpleJava2SqlConversion : Java2Sql {
     override fun bindArray(data: List<*>, preparedStatement: PreparedStatement) {
         data.mapIndexed { i, value ->
             val index = i + 1
