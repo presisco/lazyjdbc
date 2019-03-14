@@ -61,13 +61,13 @@ abstract class BaseJdbcClient<T>(
         }
     }
 
-    abstract fun select(sql: String): List<T>
+    abstract fun select(sql: String, vararg params: Any): List<T>
 
     abstract fun insert(tableName: String, dataList: List<T>): Set<Int>
 
     abstract fun replace(tableName: String, dataList: List<T>): Set<Int>
 
-    abstract fun delete(sql: String)
+    abstract fun delete(sql: String, vararg params: Any): Boolean
 
     companion object {
         const val INSERT = "insert into TABLENAME(COLUMNS) values(PLACEHOLDERS)"

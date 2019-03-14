@@ -5,7 +5,7 @@ import java.sql.Types
 
 class SimpleSql2JavaConversion : Sql2Java {
 
-    override fun toArray(resultSet: ResultSet): Array<*> {
+    override fun toList(resultSet: ResultSet): Array<*> {
         val metaData = resultSet.metaData
         val columnCount = metaData.columnCount
         val data = Array<Any?>(columnCount, { null })

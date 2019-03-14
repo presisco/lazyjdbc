@@ -1,28 +1,29 @@
 package sql
 
 import com.presisco.lazyjdbc.client.OracleMapJdbcClient
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
+import org.junit.Before
 import org.junit.Test
-import java.util.*
+import kotlin.test.expect
 
-class OracleMapJdbcClientTest {
-    private val oracleDataSource = mapOf(
-            "dataSourceClassName" to "oracle.jdbc.pool.OracleDataSource",
-            "dataSource.url" to "jdbc:oracle:thin:@//192.168.1.201:1521/XE",
-            "dataSource.user" to "SAMPLE",
-            "dataSource.password" to "sample",
-            "maximumPoolSize" to "2"
-    )
+class OracleMapJdbcClientTest : LazyJdbcClientTest(
+        "dataSourceClassName" to "oracle.jdbc.pool.OracleDataSource",
+        "dataSource.url" to "jdbc:oracle:thin:@//192.168.1.201:1521/XE",
+        "dataSource.user" to "SAMPLE",
+        "dataSource.password" to "sample",
+        "maximumPoolSize" to "1"
+) {
+    private lateinit var client: OracleMapJdbcClient
+
+    @Before
+    fun prepare() {
+        client = OracleMapJdbcClient(getDataSource())
+    }
 
     @Test
     fun querySequence() {
-        val props = Properties()
-        props.putAll(oracleDataSource)
-        val hikari = HikariDataSource(HikariConfig(props))
-
-        val client = OracleMapJdbcClient(hikari, 5, true)
-        val ids = client.querySequence("run_id", 5)
-        ids.forEach { println(it) }
+        client.executeSQL("CREATE SEQUENCE TEST MINVALUE 1 MAXVALUE 9 INCREMENT BY 1 START WITH 1 ORDER NOCACHE")
+        expect(listOf(1L, 2L, 3L, 4L, 5L)) { client.querySequence("TEST", 5) }
+        client.executeSQL("DROP SEQUENCE TEST")
     }
+
 }

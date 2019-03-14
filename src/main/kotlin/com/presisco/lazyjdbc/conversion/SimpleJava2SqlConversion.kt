@@ -4,13 +4,17 @@ import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.Time
 import java.sql.Timestamp
+import java.sql.Types.VARCHAR
 
 class SimpleJava2SqlConversion : Java2Sql {
-    override fun bindArray(data: List<*>, preparedStatement: PreparedStatement) {
+    override fun bindList(data: List<*>, preparedStatement: PreparedStatement) {
         data.mapIndexed { i, value ->
             val index = i + 1
             with(preparedStatement) {
-                value ?: throw RuntimeException("unsupported null value at array index: $i")
+                if (value == null) {
+                    setNull(index, VARCHAR)
+                    return
+                }
                 when (value) {
                     is String -> setString(index, value)
 

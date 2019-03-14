@@ -1,9 +1,11 @@
 package com.presisco.lazyjdbc.client
 
+import com.presisco.lazyjdbc.convertion.SimpleJava2SqlConversion
 import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConversion
 import com.presisco.lazyjdbc.convertion.SqlTypedJava2SqlConversion
 import java.sql.SQLException
 import java.sql.Statement
+import java.text.SimpleDateFormat
 import javax.sql.DataSource
 
 open class MapJdbcClient(
@@ -17,6 +19,7 @@ open class MapJdbcClient(
 ) {
     private val sql2Java = SimpleSql2JavaConversion()
     private val sqlTypeCache = HashMap<String, HashMap<String, Int>>()
+    var dateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS")
 
     fun getColumnTypeMap(tableName: String): HashMap<String, Int> {
         if (sqlTypeCache.containsKey(tableName)) {
@@ -45,12 +48,14 @@ open class MapJdbcClient(
         return columnTypeMap
     }
 
-    override fun select(sql: String): List<Map<String, Any?>> {
+    override fun select(sql: String, vararg params: Any): List<Map<String, Any?>> {
         val resultList = ArrayList<Map<String, Any?>>()
         val connection = getConnection()
-        val statement = connection.createStatement()
+        val statement = connection.prepareStatement(sql)
         try {
+            SimpleJava2SqlConversion().bindList(params.toList(), statement)
             val resultSet = statement.executeQuery(sql)
+
             val metadata = resultSet.metaData
             val columnNameArray = Array(metadata.columnCount, { "" })
             with(resultSet.metaData) {
@@ -60,7 +65,7 @@ open class MapJdbcClient(
             }
             while (resultSet.next()) {
                 val map = HashMap<String, Any?>()
-                val row = sql2Java.toArray(resultSet)
+                val row = sql2Java.toList(resultSet)
                 columnNameArray.forEachIndexed { index, name -> map[name] = row[index] }
 
                 resultList.add(map)
@@ -83,7 +88,7 @@ open class MapJdbcClient(
         val connection = getConnection()
         val statement = connection.prepareStatement(sql)
         val sortedDataRow = ArrayList<Any?>(columnList.size)
-        val java2sql = SqlTypedJava2SqlConversion(sqlTypeList)
+        val java2sql = SqlTypedJava2SqlConversion(sqlTypeList, dateFormat)
 
         try {
             dataList.forEach { map ->
@@ -96,7 +101,7 @@ open class MapJdbcClient(
                     sortedDataRow.add(map[column])
                 }
 
-                java2sql.bindArray(sortedDataRow, statement)
+                java2sql.bindList(sortedDataRow, statement)
                 statement.addBatch()
 
                 sortedDataRow.clear()
@@ -136,8 +141,6 @@ open class MapJdbcClient(
         executeBatch(tableName, buildReplaceSql(tableName, typeMap.keys), dataList, typeMap)
     }
 
-    override fun delete(sql: String) {
-        executeSQL(sql)
-    }
+    override fun delete(sql: String, vararg params: Any) = executeSQL(sql)
 
 }
