@@ -6,5 +6,5 @@ class ConversionException(
         val sqlType: Int,
         message: String
 ) : Exception(
-        message = "$message, index: $index, value: $value, type of value: ${if (value == null) null else value::class.java.name}, sql type: $sqlType"
+        "$message, index: $index, value: $value, type of value: ${if (value == null) null else value::class.java.name}, sql type: $sqlType"
 )
