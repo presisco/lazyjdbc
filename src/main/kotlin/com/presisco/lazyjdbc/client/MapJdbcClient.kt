@@ -1,5 +1,6 @@
 package com.presisco.lazyjdbc.client
 
+import Definition
 import com.presisco.lazyjdbc.convertion.SimpleJava2SqlConversion
 import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConversion
 import com.presisco.lazyjdbc.convertion.SqlTypedJava2SqlConversion
@@ -19,7 +20,12 @@ open class MapJdbcClient(
 ) {
     private val sql2Java = SimpleSql2JavaConversion()
     private val sqlTypeCache = HashMap<String, HashMap<String, Int>>()
-    var dateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS")
+    var dateFormat = Definition.defaultDateFormat
+
+    fun withDateFormat(format: SimpleDateFormat): MapJdbcClient {
+        dateFormat = format
+        return this
+    }
 
     fun getColumnTypeMap(tableName: String): HashMap<String, Int> {
         if (sqlTypeCache.containsKey(tableName)) {

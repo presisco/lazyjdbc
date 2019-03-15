@@ -1,11 +1,11 @@
 package sql
 
+import Definition
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.sql.Time
-import java.sql.Timestamp
+import java.util.*
 import kotlin.test.expect
 
 class MapJdbcClientTest : LazyJdbcClientTest(
@@ -29,21 +29,19 @@ class MapJdbcClientTest : LazyJdbcClientTest(
 
     @Test
     fun insertOracle() {
-        val timeString = "2019-03-01 23:45:06.789"
-        val date = client.dateFormat.parse(timeString)
-        val ms = date.time
-        val timeStamp = Timestamp(ms)
-        val time = Time(ms)
-        val sqlDate = java.sql.Date(ms)
+        println("current time: ${Definition.currentTimeString()}")
+        val ms = System.currentTimeMillis()
+        val date = Date(ms)
+        val timeString = Definition.defaultDateFormat.format(date)
         client.insert("TEST", listOf(
                 mapOf("A" to 888.888, "B" to "message", "C" to timeString),
                 mapOf("A" to 888.888, "B" to "message", "C" to date),
                 mapOf("A" to 888.888, "B" to "message", "C" to ms)
         ))
         expect(listOf(
-                mapOf("A" to 888.888, "B" to "message", "C" to timeStamp),
-                mapOf("A" to 888.888, "B" to "message", "C" to timeStamp),
-                mapOf("A" to 888.888, "B" to "message", "C" to timeStamp)
+                mapOf("A" to 888.888, "B" to "message", "C" to date),
+                mapOf("A" to 888.888, "B" to "message", "C" to date),
+                mapOf("A" to 888.888, "B" to "message", "C" to date)
         )) { client.select("SELECT * FROM TEST") }
     }
 
