@@ -1,5 +1,6 @@
 package com.presisco.lazyjdbc.convertion
 
+import conversion.ConversionException
 import java.sql.Date
 import java.sql.PreparedStatement
 import java.sql.Time
@@ -29,7 +30,7 @@ class SimpleJava2SqlConversion : Java2Sql {
                     is Date -> setDate(index, value)
                     is Time -> setTime(index, value)
                     is Timestamp -> setTimestamp(index, value)
-                    else -> throw RuntimeException("Unknown type of value: " + value + ", type: " + value::class.java.name)
+                    else -> throw ConversionException(index, value, java.sql.Types.OTHER, "Unknown java type")
                 }
             }
         }

@@ -76,8 +76,8 @@ open class MapJdbcClient(
 
                 resultList.add(map)
             }
-        } catch (e: SQLException) {
-            throw RuntimeException("failed to execute sql: $sql", e)
+        } catch (e: Exception) {
+            throw e
         } finally {
             statement.close()
             closeConnection(connection)

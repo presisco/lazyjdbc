@@ -1,5 +1,6 @@
 package com.presisco.lazyjdbc.convertion
 
+import conversion.ConversionException
 import java.sql.ResultSet
 import java.sql.Types
 import java.util.*
@@ -35,7 +36,7 @@ class SimpleSql2JavaConversion : Sql2Java {
                     Types.DATE -> Date(getDate(index).time)
                     Types.TIME -> Date(getTime(index).time)
                     Types.TIMESTAMP -> Date(getTimestamp(index).time)
-                    else -> throw RuntimeException("type = $columnSqlType for column ${metaData.getColumnName(index)} not supported.")
+                    else -> throw ConversionException(index, null, columnSqlType, "type for column ${metaData.getColumnName(index)} not supported.")
                 }
             }
         }

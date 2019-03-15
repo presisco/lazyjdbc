@@ -1,5 +1,6 @@
 package com.presisco.lazyjdbc.convertion
 
+import conversion.ConversionException
 import java.sql.PreparedStatement
 import java.sql.Time
 import java.sql.Timestamp
@@ -25,7 +26,7 @@ class SqlTypedJava2SqlConversion(
                         is String -> dateFormat.parse(value).time
                         is Number -> value.toLong()
                         is Date -> value.time
-                        else -> throw RuntimeException("Unsupported value $value type ${value::class.java.name} for time millisecond extraction")
+                        else -> throw ConversionException(index, value, sqlType, "Unsupported time millisecond extraction")
                     }
 
                     when (sqlType) {
@@ -43,7 +44,7 @@ class SqlTypedJava2SqlConversion(
                             is Double -> setDouble(index, value)
 
                             is Boolean -> setBoolean(index, value)
-                            else -> throw RuntimeException("Unknown type of value: " + value + ", type: " + value::class.java.name)
+                            else -> throw ConversionException(index, value, sqlType, "Unknown type of value")
                         }
                     }
                 }
