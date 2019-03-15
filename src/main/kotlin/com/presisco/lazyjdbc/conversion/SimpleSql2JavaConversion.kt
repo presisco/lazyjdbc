@@ -2,10 +2,11 @@ package com.presisco.lazyjdbc.convertion
 
 import java.sql.ResultSet
 import java.sql.Types
+import java.util.*
 
 class SimpleSql2JavaConversion : Sql2Java {
 
-    override fun toList(resultSet: ResultSet): Array<*> {
+    override fun toList(resultSet: ResultSet): List<*> {
         val metaData = resultSet.metaData
         val columnCount = metaData.columnCount
         val data = Array<Any?>(columnCount, { null })
@@ -31,15 +32,15 @@ class SimpleSql2JavaConversion : Sql2Java {
                     Types.BIT -> getByte(index)
                     Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> getBytes(index)
 
-                    Types.DATE -> getDate(index)
-                    Types.TIME -> getTime(index)
-                    Types.TIMESTAMP -> getTimestamp(index)
+                    Types.DATE -> Date(getDate(index).time)
+                    Types.TIME -> Date(getTime(index).time)
+                    Types.TIMESTAMP -> Date(getTimestamp(index).time)
                     else -> throw RuntimeException("type = $columnSqlType for column ${metaData.getColumnName(index)} not supported.")
                 }
             }
         }
 
-        return data
+        return data.toList()
     }
 
 }
