@@ -27,7 +27,7 @@ abstract class BaseJdbcClient<T>(
         closeConnection(connection)
     }
 
-    fun wrap(content: String) = "$wrapper$content$wrapper"
+    fun wrap(content: String) = StringToolbox.concat(content.split("."), wrapper, ".")
 
     /**
      * replace '?' in sql with wrapped parameters
