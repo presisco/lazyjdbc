@@ -27,6 +27,18 @@ abstract class BaseJdbcClient<T>(
         closeConnection(connection)
     }
 
+    fun wrap(content: String) = "$wrapper$content$wrapper"
+
+    /**
+     * replace '?' in sql with wrapped parameters
+     */
+    fun wrapSql(sql: String, vararg params: String): String {
+        params.forEach {
+            sql.replaceFirst("?", wrap(it))
+        }
+        return sql
+    }
+
     fun getConnection(): Connection {
         val connection = dataSource.connection
         connection.autoCommit = false
