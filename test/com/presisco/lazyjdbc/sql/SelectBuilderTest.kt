@@ -32,10 +32,11 @@ class SelectBuilderTest : LazyJdbcClientTest(
                                         .where(condition("no", "like", "stop")), "j").on("j.id", "log.sid")
                 ).where(condition(
                         condition("id", "<", 14)
-                                .and("age", "like", "old")
-                                .or("weight", ">", null)
-                                .and("gender", "in", client.buildSelect("*").from(table("run_table")))
-                ).or("gender", "in", listOf("male", "female"))
+                                .and(
+                                        condition("weight", ">", null)
+                                                .and("gender", "in", client.buildSelect("*").from(table("run_table")))
+                                )
+                ).or(condition("gender", "in", listOf("male", "female")).andNotNull("height", ">", null))
                 ).groupBy("id", "age", "gender")
 
         expect("select \"a\", \"b\", \"c\"\n" +
@@ -44,16 +45,16 @@ class SelectBuilderTest : LazyJdbcClientTest(
                 "full join (select \"id\"\n" +
                 "from \"alarm_table\"\n" +
                 "where \"no\" like ?) as \"j\" on \"j\".\"id\" = \"log\".\"sid\"\n" +
-                "where (((\"id\" < ?)\n" +
-                " and (\"age\" like ?))\n" +
+                "where ((\"id\" < ?)\n" +
+                " and ((\"weight\" > ?)\n" +
                 " and (\"gender\" in (\n" +
                 "select *\n" +
                 "from \"run_table\"\n" +
-                ")))\n" +
+                "))))\n" +
                 " or (\"gender\" in (?, ?))\n" +
                 "group by \"id\", \"age\", \"gender\"") { builder.toSQL() }
 
-        println(builder.params)
+        expect(listOf<Any?>("stop", 14, null, "male", "female")) { builder.params }
     }
 
 }

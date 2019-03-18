@@ -14,12 +14,21 @@ class Condition(
 
     fun and(left: Any, compare: String, right: Any?) = Condition(this, "and", Condition(left, compare, right))
 
+    fun and(condition: Condition) = and(condition.left, condition.compare, condition.right)
+
+    fun andNotNull(left: Any, compare: String, right: Any?) = if (right == null) this else and(left, compare, right)
+
+    fun andNotNull(condition: Condition) = andNotNull(condition.left, condition.compare, condition.right)
+
     fun or(left: Any, compare: String, right: Any?) = Condition(this, "or", Condition(left, compare, right))
 
+    fun or(condition: Condition) = or(condition.left, condition.compare, condition.right)
+
+    fun orNotNull(left: Any, compare: String, right: Any?) = if (right == null) this else or(left, compare, right)
+
+    fun orNotNull(condition: Condition) = orNotNull(condition.left, condition.compare, condition.right)
+
     fun toSQL(wrap: (String) -> String, dateFormat: SimpleDateFormat, params: MutableList<Any?>): String {
-        if (right == null) {
-            return ""
-        }
 
         val leftRaw = if (left is Condition) {
             left.toSQL(wrap, dateFormat, params)
