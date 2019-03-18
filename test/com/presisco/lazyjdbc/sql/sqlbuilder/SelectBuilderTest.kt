@@ -1,4 +1,4 @@
-package sql
+package sql.sqlbuilder
 
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import com.presisco.lazyjdbc.client.condition
@@ -6,6 +6,7 @@ import com.presisco.lazyjdbc.client.conditionNotNull
 import com.presisco.lazyjdbc.client.table
 import org.junit.Before
 import org.junit.Test
+import sql.LazyJdbcClientTest
 import kotlin.test.expect
 
 class SelectBuilderTest : LazyJdbcClientTest(
@@ -41,8 +42,8 @@ class SelectBuilderTest : LazyJdbcClientTest(
             client.buildSelect("*")
                     .from(
                             table("data_table")
-                                    .table("map_table", "map")
-                                    .innerJoin("map_table", "map").on("map.sid", "log.sid")
+                                    .table("map_table").rename("map")
+                                    .innerJoin("map_table").rename("map").on("map.sid", "log.sid")
                     ).toSQL()
         }
     }
@@ -59,19 +60,19 @@ class SelectBuilderTest : LazyJdbcClientTest(
     }
 
     @Test
-    fun querySequence() {
+    fun complicateMix() {
         val builder = client.buildSelect("a", "b", "c")
-                .from(table("log_table", "log")
-                        .innerJoin("map_table", "map").on("map.sid", "log.sid")
+                .from(table("log_table").rename("log")
+                        .innerJoin("map_table").rename("map").on("map.sid", "log.sid")
                         .fullJoin(
                                 client.buildSelect("id")
                                         .from(table("alarm_table"))
-                                        .where(condition("no", "like", "stop")), "j").on("j.id", "log.sid")
+                                        .where(condition("no", "like", "stop"))).rename("j").on("j.id", "log.sid")
                 ).where(condition(
                         condition("id", "<", 14)
                                 .and(
                                         condition("weight", ">", null)
-                                                .and("gender", "in", client.buildSelect("*").from(table("run_table")))
+                                                .and(listOf("gender", "age"), "in", client.buildSelect("gender", "age").from(table("run_table")))
                                 )
                 ).or(condition("gender", "in", listOf("male", "female")).andNotNull("height", ">", null))
                 ).groupBy("id", "age", "gender")
@@ -84,8 +85,8 @@ class SelectBuilderTest : LazyJdbcClientTest(
                 "where \"no\" like ?) as \"j\" on \"j\".\"id\" = \"log\".\"sid\"\n" +
                 "where ((\"id\" < ?)\n" +
                 " and ((\"weight\" > ?)\n" +
-                " and (\"gender\" in (\n" +
-                "select *\n" +
+                " and ((\"gender\", \"age\") in (\n" +
+                "select \"gender\", \"age\"\n" +
                 "from \"run_table\"\n" +
                 "))))\n" +
                 " or (\"gender\" in (?, ?))\n" +

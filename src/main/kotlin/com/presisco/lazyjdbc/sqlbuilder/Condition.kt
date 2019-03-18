@@ -2,7 +2,6 @@ package com.presisco.lazyjdbc.sqlbuilder
 
 import com.presisco.lazyjdbc.client.placeHolders
 import sqlbuilder.SelectBuilder
-import java.text.SimpleDateFormat
 
 open class Condition(
         private val left: Any,
@@ -28,22 +27,24 @@ open class Condition(
 
     fun orNotNull(condition: Condition) = orNotNull(condition.left, condition.compare, condition.right)
 
-    open fun toSQL(wrap: (String) -> String, dateFormat: SimpleDateFormat, params: MutableList<Any?>): String {
+    open fun toSQL(wrap: (String) -> String, params: MutableList<Any?>): String {
 
         val leftRaw = if (left is Condition) {
-            left.toSQL(wrap, dateFormat, params)
+            left.toSQL(wrap, params)
+        } else if (left is Collection<*>) {
+            (left as Collection<String>).joinToString(separator = ", ", transform = wrap)
         } else {
-            left as String
+            left.toString()
         }
 
         val rightRaw = when (right) {
-            is Condition -> right.toSQL(wrap, dateFormat, params)
+            is Condition -> right.toSQL(wrap, params)
             is SelectBuilder -> {
                 val sql = "(\n${right.toSQL()}\n)"
                 params.addAll(right.params)
                 sql
             }
-            is List<*> -> {
+            is Collection<*> -> {
                 params.addAll(right)
                 "(${placeHolders(right.size)})"
             }
@@ -60,6 +61,7 @@ open class Condition(
         if (!leftEmpty) {
             when (left) {
                 is Condition -> builder.append(if (!rightEmpty) "($leftRaw)" else leftRaw).append("\n")
+                is Collection<*> -> builder.append("($leftRaw)")
                 is String -> builder.append(wrap(leftRaw))
             }
         }

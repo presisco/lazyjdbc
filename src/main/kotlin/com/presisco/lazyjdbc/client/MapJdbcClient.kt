@@ -4,7 +4,10 @@ import Definition
 import com.presisco.lazyjdbc.convertion.SimpleJava2SqlConversion
 import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConversion
 import com.presisco.lazyjdbc.convertion.SqlTypedJava2SqlConversion
+import sqlbuilder.DeleteBuilder
+import sqlbuilder.InsertBuilder
 import sqlbuilder.SelectBuilder
+import sqlbuilder.UpdateBuilder
 import java.sql.SQLException
 import java.sql.Statement
 import java.text.SimpleDateFormat
@@ -143,6 +146,10 @@ open class MapJdbcClient(
         executeBatch(tableName, buildInsertSql(tableName, typeMap.keys), dataList, typeMap)
     }
 
+    fun insert(tableName: String, vararg fields: Pair<String, Any?>) = insert(tableName, listOf(mapOf(*fields)))
+
+    fun insert(tableName: String, data: Map<String, Any?>) = insert(tableName, listOf(data))
+
     override fun replace(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
         setOf()
     } else {
@@ -150,6 +157,14 @@ open class MapJdbcClient(
         executeBatch(tableName, buildReplaceSql(tableName, typeMap.keys), dataList, typeMap)
     }
 
-    override fun delete(sql: String, vararg params: Any) = executeSQL(sql)
+    override fun delete(sql: String, vararg params: Any) = executeSQL(sql, params)
+
+    override fun update(sql: String, vararg params: Any) = executeSQL(sql, params)
+
+    fun deleteFrom(table: String) = DeleteBuilder(table, this)
+
+    fun update(table: String) = UpdateBuilder(table, this)
+
+    fun insertInto(table: String) = InsertBuilder(table, this)
 
 }

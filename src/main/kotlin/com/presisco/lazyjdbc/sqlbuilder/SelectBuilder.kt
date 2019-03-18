@@ -2,13 +2,14 @@ package sqlbuilder
 
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import com.presisco.lazyjdbc.client.addNotEmpty
+import com.presisco.lazyjdbc.client.condition
+import com.presisco.lazyjdbc.client.conditionNotNull
 import com.presisco.lazyjdbc.sqlbuilder.Condition
 import com.presisco.lazyjdbc.sqlbuilder.Table
-import java.util.*
 
 class SelectBuilder(
-        val client: MapJdbcClient
-) {
+        client: MapJdbcClient
+) : Builder(client) {
 
     private lateinit var columnText: String
     private lateinit var from: String
@@ -16,10 +17,6 @@ class SelectBuilder(
     private var groupBy = ""
     private var having = ""
     private var orderBy = ""
-    val params = LinkedList<Any?>()
-
-    fun Array<out String>.fieldJoin(wrap: (String) -> String, separator: String = ", ") = this.joinToString(separator = separator, transform = wrap)
-
 
     fun select(vararg columns: String): SelectBuilder {
         columnText = if (columns.isEmpty() || columns[0] == "*") {
@@ -45,18 +42,33 @@ class SelectBuilder(
         return this
     }
 
+    fun from(vararg tables: String): SelectBuilder {
+        from = tables.fieldJoin()
+        return this
+    }
+
     fun where(condition: Condition): SelectBuilder {
-        where = condition.toSQL(client::wrap, client.dateFormat, params)
+        where = condition.toSQL(client::wrap, params)
+        return this
+    }
+
+    fun where(left: Any, compare: String, right: Any?): SelectBuilder {
+        where(condition(left, compare, right))
+        return this
+    }
+
+    fun whereNotNull(left: Any, compare: String, right: Any?): SelectBuilder {
+        where(conditionNotNull(left, compare, right))
         return this
     }
 
     fun groupBy(vararg columns: String): SelectBuilder {
-        groupBy = columns.fieldJoin(client::wrap)
+        groupBy = columns.fieldJoin()
         return this
     }
 
     fun having(condition: Condition): SelectBuilder {
-        having = condition.toSQL(client::wrap, client.dateFormat, params)
+        having = condition.toSQL(client::wrap, params)
         return this
     }
 
@@ -65,7 +77,7 @@ class SelectBuilder(
         return this
     }
 
-    fun toSQL() = arrayListOf("select $columnText", "from $from")
+    override fun toSQL() = arrayListOf("select $columnText", "from $from")
             .addNotEmpty("where ", where)
             .addNotEmpty("group by ", groupBy)
             .addNotEmpty("having ", having)

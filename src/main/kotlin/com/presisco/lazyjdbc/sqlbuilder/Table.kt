@@ -6,33 +6,42 @@ import sqlbuilder.SelectBuilder
 
 class Table(
         val original: Any,
-        val rename: String = "",
         var next: Table? = null
 ) {
+    var rename: String = ""
     var join: String = ""
     var leftKey: String = ""
     var rightKey: String = ""
 
-    fun table(original: Any, rename: String = ""): Table {
-        val newTable = Table(original, rename, next)
+    fun table(original: Any): Table {
+        val newTable = Table(original, next)
         next = newTable
         return this
     }
 
-    fun join(join: String, original: Any, rename: String = ""): Table {
-        val newTable = Table(original, rename, next)
+    fun join(join: String, original: Any): Table {
+        val newTable = Table(original, next)
         newTable.join = join
         next = newTable
         return this
     }
 
-    fun innerJoin(original: Any, rename: String = "") = join("inner join", original, rename)
+    fun innerJoin(original: Any) = join("inner join", original)
 
-    fun leftJoin(original: Any, rename: String = "") = join("left join", original, rename)
+    fun leftJoin(original: Any) = join("left join", original)
 
-    fun rightJoin(original: Any, rename: String = "") = join("right join", original, rename)
+    fun rightJoin(original: Any) = join("right join", original)
 
-    fun fullJoin(original: Any, rename: String = "") = join("full join", original, rename)
+    fun fullJoin(original: Any) = join("full join", original)
+
+    fun rename(rename: String): Table {
+        if (next == null) {
+            this.rename = rename
+        } else {
+            next!!.rename = rename
+        }
+        return this
+    }
 
     fun on(left: String, right: String): Table {
         next!!.leftKey = left
@@ -56,9 +65,9 @@ class Table(
         } else {
             wrap(original.toString())
         })
-                .addNotEmpty("as ", rename, wrap)
-                .addNotEmpty("on ", leftKey, wrap)
-                .addNotEmpty("= ", rightKey, wrap)
+                .addNotEmpty("as ", rename, wrap = wrap)
+                .addNotEmpty("on ", leftKey, wrap = wrap)
+                .addNotEmpty("= ", rightKey, wrap = wrap)
 
         val sql = items.joinToString(" ")
         return if (next != null) {

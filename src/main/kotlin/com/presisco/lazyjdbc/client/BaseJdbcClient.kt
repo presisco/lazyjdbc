@@ -1,5 +1,6 @@
 package com.presisco.lazyjdbc.client
 
+import com.presisco.lazyjdbc.convertion.SimpleJava2SqlConversion
 import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -53,6 +54,18 @@ abstract class BaseJdbcClient<T>(
         return result
     }
 
+    fun executeSQL(query: String, vararg params: Any?): Boolean {
+        val connection = getConnection()
+        val statement = connection.prepareStatement(query)
+        statement.queryTimeout = queryTimeoutSecs
+        val java2sql = SimpleJava2SqlConversion()
+        java2sql.bindList(params.toList(), statement)
+        val result = statement.execute()
+        statement.close()
+        closeConnection(connection)
+        return result
+    }
+
     fun buildInsertSql(tableName: String, columns: Collection<String>) = INSERT.replace("TABLENAME", wrap(tableName))
             .replace("COLUMNS", columns.fieldJoin(this::wrap))
             .replace("PLACEHOLDERS", placeHolders(columns.size))
@@ -76,6 +89,8 @@ abstract class BaseJdbcClient<T>(
     abstract fun insert(tableName: String, dataList: List<T>): Set<Int>
 
     abstract fun replace(tableName: String, dataList: List<T>): Set<Int>
+
+    abstract fun update(sql: String, vararg params: Any): Boolean
 
     abstract fun delete(sql: String, vararg params: Any): Boolean
 

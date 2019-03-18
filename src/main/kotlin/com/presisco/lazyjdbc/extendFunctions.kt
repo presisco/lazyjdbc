@@ -18,9 +18,14 @@ fun ArrayList<String>.addWith(text: String): ArrayList<String> {
     return this
 }
 
-fun ArrayList<String>.addNotEmpty(prefix: String = "", text: String, wrap: (String) -> String = { it }): ArrayList<String> {
+fun ArrayList<String>.addAllWith(text: Collection<String>): ArrayList<String> {
+    this.addAll(text)
+    return this
+}
+
+fun ArrayList<String>.addNotEmpty(prefix: String = "", text: String, postfix: String = "", wrap: (String) -> String = { it }): ArrayList<String> {
     if (text.isNotEmpty()) {
-        this.add(prefix + wrap(text))
+        this.add(prefix + wrap(text) + postfix)
     }
     return this
 }
@@ -29,7 +34,7 @@ fun Collection<String>.fieldJoin(wrap: (String) -> String, separator: String = "
 
 fun Array<out String>.fieldJoin(wrap: (String) -> String, separator: String = ", ") = this.joinToString(separator = separator, transform = wrap)
 
-fun table(original: String, rename: String = "") = Table(original, rename)
+fun table(original: String) = Table(original)
 
 fun condition(left: Any, compare: String, right: Any?) = Condition(left, compare, right)
 

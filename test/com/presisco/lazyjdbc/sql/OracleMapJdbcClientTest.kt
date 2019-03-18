@@ -5,13 +5,7 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.expect
 
-class OracleMapJdbcClientTest : LazyJdbcClientTest(
-        "dataSourceClassName" to "oracle.jdbc.pool.OracleDataSource",
-        "dataSource.url" to "jdbc:oracle:thin:@//192.168.1.201:1521/XE",
-        "dataSource.user" to "SAMPLE",
-        "dataSource.password" to "sample",
-        "maximumPoolSize" to "1"
-) {
+class OracleMapJdbcClientTest : LazyJdbcClientTest() {
     private lateinit var client: OracleMapJdbcClient
 
     @Before
