@@ -2,9 +2,10 @@ package com.presisco.lazyjdbc.sqlbuilder
 
 import com.presisco.lazyjdbc.client.addNotEmpty
 import com.presisco.lazyjdbc.client.addWith
+import sqlbuilder.SelectBuilder
 
 class Table(
-        val original: String,
+        val original: Any,
         val rename: String = "",
         var next: Table? = null
 ) {
@@ -12,14 +13,20 @@ class Table(
     var leftKey: String = ""
     var rightKey: String = ""
 
-    fun join(join: String, original: String, rename: String = ""): Table {
+    fun join(join: String, original: Any, rename: String = ""): Table {
         val newTable = Table(original, rename, next)
         newTable.join = join
         next = newTable
         return this
     }
 
-    fun innerJoin(original: String, rename: String = "") = join("inner join", original, rename)
+    fun innerJoin(original: Any, rename: String = "") = join("inner join", original, rename)
+
+    fun leftJoin(original: Any, rename: String = "") = join("left join", original, rename)
+
+    fun rightJoin(original: Any, rename: String = "") = join("right join", original, rename)
+
+    fun fullJoin(original: Any, rename: String = "") = join("full join", original, rename)
 
     fun on(left: String, right: String): Table {
         next!!.leftKey = left
@@ -27,17 +34,23 @@ class Table(
         return this
     }
 
-    fun toSQL(wrap: (String) -> String): String {
+    fun toSQL(wrap: (String) -> String, params: MutableList<Any?>): String {
         val items = arrayListOf<String>()
                 .addNotEmpty(text = join)
-                .addWith(wrap(original))
+                .addWith(if (original is SelectBuilder) {
+                    val sql = "(${original.toSQL()})"
+                    params.addAll(original.params)
+                    sql
+                } else {
+                    wrap(original.toString())
+                })
                 .addNotEmpty("as ", rename, wrap)
                 .addNotEmpty("on ", leftKey, wrap)
                 .addNotEmpty("= ", rightKey, wrap)
 
         val sql = items.joinToString(" ")
         return if (next != null) {
-            sql + "\n" + next!!.toSQL(wrap)
+            sql + "\n" + next!!.toSQL(wrap, params)
         } else {
             sql
         }

@@ -4,6 +4,7 @@ import Definition
 import com.presisco.lazyjdbc.convertion.SimpleJava2SqlConversion
 import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConversion
 import com.presisco.lazyjdbc.convertion.SqlTypedJava2SqlConversion
+import sqlbuilder.SelectBuilder
 import java.sql.SQLException
 import java.sql.Statement
 import java.text.SimpleDateFormat
@@ -21,6 +22,8 @@ open class MapJdbcClient(
     private val sql2Java = SimpleSql2JavaConversion()
     private val sqlTypeCache = HashMap<String, HashMap<String, Int>>()
     var dateFormat = Definition.defaultDateFormat
+
+    fun buildSelect(vararg columns: String) = SelectBuilder(this::wrap, dateFormat).select(*columns)
 
     fun withDateFormat(format: SimpleDateFormat): MapJdbcClient {
         dateFormat = format

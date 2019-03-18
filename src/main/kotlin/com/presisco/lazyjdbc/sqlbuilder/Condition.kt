@@ -1,9 +1,8 @@
 package com.presisco.lazyjdbc.sqlbuilder
 
-import com.presisco.lazyjdbc.client.joinSQLValue
-import com.presisco.lazyjdbc.client.toSQLValue
+import com.presisco.lazyjdbc.client.placeHolders
+import sqlbuilder.SelectBuilder
 import java.text.SimpleDateFormat
-import java.util.*
 
 class Condition(
         private val left: Any,
@@ -17,18 +16,32 @@ class Condition(
 
     fun or(left: Any, compare: String, right: Any?) = Condition(this, "or", Condition(left, compare, right))
 
-    fun toSQL(wrap: (String) -> String, dateFormat: SimpleDateFormat): String {
+    fun toSQL(wrap: (String) -> String, dateFormat: SimpleDateFormat, params: MutableList<Any?>): String {
         if (right == null) {
             return ""
         }
 
-        val leftRaw = if (left is Condition) left.toSQL(wrap, dateFormat) else left as String
+        val leftRaw = if (left is Condition) {
+            left.toSQL(wrap, dateFormat, params)
+        } else {
+            left as String
+        }
+
         val rightRaw = when (right) {
-            is Condition -> right.toSQL(wrap, dateFormat)
-            is List<*> -> right.joinSQLValue()
-            is Number -> right.toString()
-            is Date -> dateFormat.format(right).toSQLValue()
-            else -> right.toSQLValue()
+            is Condition -> right.toSQL(wrap, dateFormat, params)
+            is SelectBuilder -> {
+                val sql = "(\n${right.toSQL()}\n)"
+                params.addAll(right.params)
+                sql
+            }
+            is List<*> -> {
+                params.addAll(right)
+                "(${placeHolders(right.size)})"
+            }
+            else -> {
+                params.add(right)
+                "?"
+            }
         }
 
         val leftEmpty = leftRaw.isEmpty()
@@ -37,7 +50,7 @@ class Condition(
         val builder = StringBuilder()
         if (!leftEmpty) {
             when (left) {
-                is Condition -> builder.append(if (!rightEmpty) "($leftRaw)" else leftRaw)
+                is Condition -> builder.append(if (!rightEmpty) "($leftRaw)" else leftRaw).append("\n")
                 is String -> builder.append(wrap(leftRaw))
             }
         }
@@ -46,11 +59,10 @@ class Condition(
         }
         if (!rightEmpty) {
             when (right) {
-                is Condition -> builder.append(if (!leftEmpty) "($rightRaw)" else rightRaw)
+                is Condition -> builder.append(if (!leftEmpty) "($rightRaw)" else rightRaw).append("\n")
                 else -> builder.append(rightRaw)
             }
         }
-
-        return builder.toString()
+        return builder.toString().trimEnd()
     }
 }

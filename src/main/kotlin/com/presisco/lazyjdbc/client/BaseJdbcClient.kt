@@ -1,6 +1,5 @@
 package com.presisco.lazyjdbc.client
 
-import com.presisco.toolbox.StringToolbox
 import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
@@ -27,7 +26,7 @@ abstract class BaseJdbcClient<T>(
         closeConnection(connection)
     }
 
-    fun wrap(content: String) = StringToolbox.concat(content.split("."), wrapper, ".")
+    fun wrap(content: String): String = content.split(".").joinToString(separator = ".", transform = { wrapper + it + wrapper })
 
     /**
      * replace '?' in sql with wrapped parameters
@@ -54,14 +53,13 @@ abstract class BaseJdbcClient<T>(
         return result
     }
 
-    fun buildInsertSql(tableName: String, columns: Collection<String>)
-            = INSERT.replace("TABLENAME", wrapper + tableName + wrapper)
-            .replace("COLUMNS", StringToolbox.concat(columns, wrapper, ", "))
-            .replace("PLACEHOLDERS", StringToolbox.concat("?", columns.size, ", "))
+    fun buildInsertSql(tableName: String, columns: Collection<String>) = INSERT.replace("TABLENAME", wrap(tableName))
+            .replace("COLUMNS", columns.fieldJoin(this::wrap))
+            .replace("PLACEHOLDERS", placeHolders(columns.size))
 
-    fun buildReplaceSql(tableName: String, columns: Collection<String>) = REPLACE.replace("TABLENAME", wrapper + tableName + wrapper)
-            .replace("COLUMNS", StringToolbox.concat(columns, wrapper, ", "))
-            .replace("PLACEHOLDERS", StringToolbox.concat("?", columns.size, ", "))
+    fun buildReplaceSql(tableName: String, columns: Collection<String>) = REPLACE.replace("TABLENAME", wrap(tableName))
+            .replace("COLUMNS", columns.fieldJoin(this::wrap))
+            .replace("PLACEHOLDERS", placeHolders(columns.size))
 
     protected fun closeConnection(connection: Connection?) {
         if (connection != null) {
