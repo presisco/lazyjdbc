@@ -2,6 +2,7 @@ package sql
 
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import com.presisco.lazyjdbc.client.condition
+import com.presisco.lazyjdbc.client.conditionNotNull
 import com.presisco.lazyjdbc.client.table
 import org.junit.Before
 import org.junit.Test
@@ -19,6 +20,42 @@ class SelectBuilderTest : LazyJdbcClientTest(
     @Before
     fun prepare() {
         client = MapJdbcClient(getDataSource())
+    }
+
+    @Test
+    fun selectColumns() {
+        expect("select \"name\", \"b\".\"c\" \"d\", \"e\" as \"f\"\n" +
+                "from \"table\"") {
+            client.buildSelect("name", "b.c d", "e as f")
+                    .from(table("table"))
+                    .toSQL()
+        }
+    }
+
+    @Test
+    fun fromTables() {
+        expect("select *\n" +
+                "from \"data_table\"\n" +
+                ", \"map_table\" as \"map\"\n" +
+                "inner join \"map_table\" as \"map\" on \"map\".\"sid\" = \"log\".\"sid\"") {
+            client.buildSelect("*")
+                    .from(
+                            table("data_table")
+                                    .table("map_table", "map")
+                                    .innerJoin("map_table", "map").on("map.sid", "log.sid")
+                    ).toSQL()
+        }
+    }
+
+    @Test
+    fun testConditionNotNull() {
+        expect("select *\n" +
+                "from \"data_table\"") {
+            client.buildSelect("*")
+                    .from(table("data_table"))
+                    .where(conditionNotNull("age", ">", null))
+                    .toSQL()
+        }
     }
 
     @Test
@@ -54,7 +91,7 @@ class SelectBuilderTest : LazyJdbcClientTest(
                 " or (\"gender\" in (?, ?))\n" +
                 "group by \"id\", \"age\", \"gender\"") { builder.toSQL() }
 
-        expect(listOf<Any?>("stop", 14, null, "male", "female")) { builder.params }
+        expect(listOf("stop", 14, null, "male", "female")) { builder.params }
     }
 
 }

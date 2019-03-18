@@ -13,6 +13,12 @@ class Table(
     var leftKey: String = ""
     var rightKey: String = ""
 
+    fun table(original: Any, rename: String = ""): Table {
+        val newTable = Table(original, rename, next)
+        next = newTable
+        return this
+    }
+
     fun join(join: String, original: Any, rename: String = ""): Table {
         val newTable = Table(original, rename, next)
         newTable.join = join
@@ -34,30 +40,35 @@ class Table(
         return this
     }
 
-    fun toSQL(wrap: (String) -> String, params: MutableList<Any?>, reverse: Boolean = false): String {
+    fun toSQL(wrap: (String) -> String, params: MutableList<Any?>, first: Boolean = true): String {
         val items = arrayListOf<String>()
-                .addNotEmpty(text = join)
-                .addWith(if (original is SelectBuilder) {
-                    val sql = "(${original.toSQL()})"
-                    params.addAll(original.params)
-                    sql
-                } else {
-                    wrap(original.toString())
-                })
+        if (first) {
+
+        } else if (join.isNotEmpty()) {
+            items.add(join)
+        } else {
+            items.add(",")
+        }
+        items.addWith(if (original is SelectBuilder) {
+            val sql = "(${original.toSQL()})"
+            params.addAll(original.params)
+            sql
+        } else {
+            wrap(original.toString())
+        })
                 .addNotEmpty("as ", rename, wrap)
                 .addNotEmpty("on ", leftKey, wrap)
                 .addNotEmpty("= ", rightKey, wrap)
 
         val sql = items.joinToString(" ")
         return if (next != null) {
-            if (reverse) {
-                next!!.toSQL(wrap, params, true) + "\n" + sql
+            if (first) {
+                sql + "\n" + next!!.toSQL(wrap, params, false)
             } else {
-                sql + "\n" + next!!.toSQL(wrap, params, true)
+                next!!.toSQL(wrap, params, false) + "\n" + sql
             }
         } else {
             sql
         }
     }
-
 }

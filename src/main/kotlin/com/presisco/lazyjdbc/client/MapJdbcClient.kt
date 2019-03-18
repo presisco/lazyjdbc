@@ -23,7 +23,7 @@ open class MapJdbcClient(
     private val sqlTypeCache = HashMap<String, HashMap<String, Int>>()
     var dateFormat = Definition.defaultDateFormat
 
-    fun buildSelect(vararg columns: String) = SelectBuilder(this::wrap, dateFormat).select(*columns)
+    fun buildSelect(vararg columns: String) = SelectBuilder(this).select(*columns)
 
     fun withDateFormat(format: SimpleDateFormat): MapJdbcClient {
         dateFormat = format

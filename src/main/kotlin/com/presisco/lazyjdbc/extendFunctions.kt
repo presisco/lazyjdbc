@@ -2,6 +2,7 @@ package com.presisco.lazyjdbc.client
 
 import com.presisco.lazyjdbc.sqlbuilder.Condition
 import com.presisco.lazyjdbc.sqlbuilder.Table
+import sqlbuilder.EmptyCondition
 
 fun StringBuilder.appendNotEmpty(before: String = "", text: String, after: String = ""): StringBuilder {
     if (text.isNotEmpty()) {
@@ -31,6 +32,8 @@ fun Array<out String>.fieldJoin(wrap: (String) -> String, separator: String = ",
 fun table(original: String, rename: String = "") = Table(original, rename)
 
 fun condition(left: Any, compare: String, right: Any?) = Condition(left, compare, right)
+
+fun conditionNotNull(left: Any, compare: String, right: Any?) = if (right == null) EmptyCondition else condition(left, compare, right)
 
 fun condition(condition: Condition) = Condition(condition)
 

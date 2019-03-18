@@ -4,7 +4,7 @@ import com.presisco.lazyjdbc.client.placeHolders
 import sqlbuilder.SelectBuilder
 import java.text.SimpleDateFormat
 
-class Condition(
+open class Condition(
         private val left: Any,
         private val compare: String,
         private val right: Any?
@@ -28,7 +28,7 @@ class Condition(
 
     fun orNotNull(condition: Condition) = orNotNull(condition.left, condition.compare, condition.right)
 
-    fun toSQL(wrap: (String) -> String, dateFormat: SimpleDateFormat, params: MutableList<Any?>): String {
+    open fun toSQL(wrap: (String) -> String, dateFormat: SimpleDateFormat, params: MutableList<Any?>): String {
 
         val leftRaw = if (left is Condition) {
             left.toSQL(wrap, dateFormat, params)
@@ -74,4 +74,5 @@ class Condition(
         }
         return builder.toString().trimEnd()
     }
+
 }
