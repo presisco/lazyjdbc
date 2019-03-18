@@ -34,7 +34,7 @@ class Table(
         return this
     }
 
-    fun toSQL(wrap: (String) -> String, params: MutableList<Any?>): String {
+    fun toSQL(wrap: (String) -> String, params: MutableList<Any?>, reverse: Boolean = false): String {
         val items = arrayListOf<String>()
                 .addNotEmpty(text = join)
                 .addWith(if (original is SelectBuilder) {
@@ -50,7 +50,11 @@ class Table(
 
         val sql = items.joinToString(" ")
         return if (next != null) {
-            sql + "\n" + next!!.toSQL(wrap, params)
+            if (reverse) {
+                next!!.toSQL(wrap, params, true) + "\n" + sql
+            } else {
+                sql + "\n" + next!!.toSQL(wrap, params, true)
+            }
         } else {
             sql
         }

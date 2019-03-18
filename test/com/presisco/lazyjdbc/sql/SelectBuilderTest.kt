@@ -40,10 +40,10 @@ class SelectBuilderTest : LazyJdbcClientTest(
 
         expect("select \"a\", \"b\", \"c\"\n" +
                 "from \"log_table\" as \"log\"\n" +
+                "inner join \"map_table\" as \"map\" on \"map\".\"sid\" = \"log\".\"sid\"\n" +
                 "full join (select \"id\"\n" +
                 "from \"alarm_table\"\n" +
                 "where \"no\" like ?) as \"j\" on \"j\".\"id\" = \"log\".\"sid\"\n" +
-                "inner join \"map_table\" as \"map\" on \"map\".\"sid\" = \"log\".\"sid\"\n" +
                 "where (((\"id\" < ?)\n" +
                 " and (\"age\" like ?))\n" +
                 " and (\"gender\" in (\n" +
