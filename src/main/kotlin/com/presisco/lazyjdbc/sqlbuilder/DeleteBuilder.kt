@@ -31,6 +31,6 @@ class DeleteBuilder(
             .addNotEmpty("where ", where)
             .joinToString("\n")
 
-    fun execute() = client.delete(toSQL(), params)
+    fun execute() = client.delete(toSQL(), *params.toArray())
 
 }

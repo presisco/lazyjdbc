@@ -15,7 +15,7 @@ abstract class LazyJdbcClientTest(
             "dataSource.url" to "jdbc:oracle:thin:@//192.168.1.201:1521/XE",
             "dataSource.user" to "SAMPLE",
             "dataSource.password" to "sample",
-            "maximumPoolSize" to "1"
+            "maximumPoolSize" to "5"
     )
 
     fun getDataSource(): DataSource {

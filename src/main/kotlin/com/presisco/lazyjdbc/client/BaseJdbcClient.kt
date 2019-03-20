@@ -17,9 +17,9 @@ abstract class BaseJdbcClient<T>(
     init {
         val connection = dataSource.connection
         val metaData = connection.metaData
-        databaseName = metaData.databaseProductName
+        databaseName = metaData.databaseProductName.toLowerCase()
         databaseVersion = metaData.databaseProductVersion
-        wrapper = when (databaseName.toLowerCase()) {
+        wrapper = when (databaseName) {
             "mysql" -> "`"
             "oracle" -> "\""
             else -> ""
@@ -50,6 +50,7 @@ abstract class BaseJdbcClient<T>(
         val statement = connection.createStatement()
         statement.queryTimeout = queryTimeoutSecs
         val result = statement.execute(query)
+        connection.commit()
         closeConnection(connection)
         return result
     }
@@ -61,6 +62,7 @@ abstract class BaseJdbcClient<T>(
         val java2sql = SimpleJava2SqlConversion()
         java2sql.bindList(params.toList(), statement)
         val result = statement.execute()
+        connection.commit()
         statement.close()
         closeConnection(connection)
         return result

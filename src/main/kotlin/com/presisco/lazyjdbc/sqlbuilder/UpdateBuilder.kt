@@ -38,5 +38,5 @@ class UpdateBuilder(
             .addNotEmpty("where ", where)
             .joinToString("\n")
 
-    fun execute() = client.update(toSQL(), params)
+    fun execute() = client.update(toSQL(), *params.toArray())
 }

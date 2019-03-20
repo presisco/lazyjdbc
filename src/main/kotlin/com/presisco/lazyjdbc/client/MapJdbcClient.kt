@@ -66,7 +66,7 @@ open class MapJdbcClient(
         val statement = connection.prepareStatement(sql)
         try {
             SimpleJava2SqlConversion().bindList(params.toList(), statement)
-            val resultSet = statement.executeQuery(sql)
+            val resultSet = statement.executeQuery()
 
             val metadata = resultSet.metaData
             val columnNameArray = Array(metadata.columnCount, { "" })
@@ -157,9 +157,9 @@ open class MapJdbcClient(
         executeBatch(tableName, buildReplaceSql(tableName, typeMap.keys), dataList, typeMap)
     }
 
-    override fun delete(sql: String, vararg params: Any) = executeSQL(sql, params)
+    override fun delete(sql: String, vararg params: Any) = executeSQL(sql, *params)
 
-    override fun update(sql: String, vararg params: Any) = executeSQL(sql, params)
+    override fun update(sql: String, vararg params: Any) = executeSQL(sql, *params)
 
     fun deleteFrom(table: String) = DeleteBuilder(table, this)
 

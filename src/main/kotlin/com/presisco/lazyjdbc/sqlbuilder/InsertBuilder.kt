@@ -21,7 +21,23 @@ class InsertBuilder(
 
     fun values(vararg values: Any?): InsertBuilder {
         params.addAll(values)
-        this.values.add("(${placeHolders(values.size)})")
+        if (this.values.isEmpty()) {
+            this.values.add("(${placeHolders(values.size)})")
+        } else {
+            when (client.databaseName) {
+                "oracle" -> {
+                    val builder = StringBuilder("into ${client.wrap(table)} ")
+                    if (columnText.isNotEmpty()) {
+                        builder.append(columnText)
+                    }
+                    builder.append(" values ")
+                    builder.append("(${placeHolders(values.size)})")
+                    this.values.add(builder.toString())
+                }
+                else -> this.values.add("(${placeHolders(values.size)})")
+            }
+        }
+
         return this
     }
 
@@ -32,18 +48,45 @@ class InsertBuilder(
     }
 
     override fun toSQL(): String {
-        val items = arrayListOf("insert into ${client.wrap(table)}")
-                .addNotEmpty("(", columnText, ")")
+        return when (client.databaseName) {
+            "oracle" -> {
+                if (values.size < 2) {
+                    val items = arrayListOf("insert into ${client.wrap(table)}")
+                            .addNotEmpty("(", columnText, ")")
+                    if (select.isNotEmpty()) {
+                        items.add(select)
+                    } else {
+                        items.add("values ${values.joinToString(separator = ", ")}")
+                    }
+                    items.joinToString("\n")
+                } else {
+                    val items = arrayListOf("insert all")
 
-        if (select.isNotEmpty()) {
-            items.add(select)
-        } else {
-            items.add("values ${values.joinToString(separator = ", ")}")
+                    val builder = StringBuilder("into ${client.wrap(table)} ")
+                    if (columnText.isNotEmpty()) {
+                        builder.append(columnText)
+                    }
+                    builder.append(" values ")
+                    builder.append(values[0])
+                    values[0] = builder.toString()
+                    items.addAll(values)
+                    items.add("select * from dual")
+                    items.joinToString("\n")
+                }
+            }
+            else -> {
+                val items = arrayListOf("insert into ${client.wrap(table)}")
+                        .addNotEmpty("(", columnText, ")")
+                if (select.isNotEmpty()) {
+                    items.add(select)
+                } else {
+                    items.add("values ${values.joinToString(separator = ", ")}")
+                }
+                items.joinToString("\n")
+            }
         }
-
-        return items.joinToString("\n")
     }
 
-    fun execute() = client.executeSQL(toSQL(), params)
+    fun execute() = client.executeSQL(toSQL(), *params.toArray())
 
 }
