@@ -65,7 +65,7 @@ class Table(
         } else {
             wrap(original.toString())
         })
-                .addNotEmpty("as ", rename, wrap = wrap)
+                .addNotEmpty(" ", rename, wrap = wrap)
                 .addNotEmpty("on ", leftKey, wrap = wrap)
                 .addNotEmpty("= ", rightKey, wrap = wrap)
 

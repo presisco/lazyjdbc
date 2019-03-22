@@ -1,11 +1,9 @@
 package com.presisco.lazyjdbc.convertion
 
 import conversion.ConversionException
-import java.sql.Date
 import java.sql.PreparedStatement
-import java.sql.Time
-import java.sql.Timestamp
 import java.sql.Types.VARCHAR
+import java.util.*
 
 class SimpleJava2SqlConversion : Java2Sql {
     override fun bindList(data: List<*>, preparedStatement: PreparedStatement) {
@@ -27,9 +25,7 @@ class SimpleJava2SqlConversion : Java2Sql {
                     is Double -> setDouble(index, value)
 
                     is Boolean -> setBoolean(index, value)
-                    is Date -> setDate(index, value)
-                    is Time -> setTime(index, value)
-                    is Timestamp -> setTimestamp(index, value)
+                    is Date -> setTimestamp(index, java.sql.Timestamp(value.time))
                     else -> throw ConversionException(index, value, java.sql.Types.OTHER, "Unknown java type")
                 }
             }

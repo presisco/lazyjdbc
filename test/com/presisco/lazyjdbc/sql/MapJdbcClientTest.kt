@@ -4,7 +4,6 @@ import Definition
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import org.junit.After
 import org.junit.Before
-import org.junit.Ignore
 import org.junit.Test
 import java.util.*
 import kotlin.test.expect
@@ -22,7 +21,7 @@ class MapJdbcClientTest : LazyJdbcClientTest() {
                 ")")
     }
 
-    @Ignore
+    @Test
     fun batchInsertOracle() {
         println("current time: ${Definition.currentTimeString()}")
         val ms = System.currentTimeMillis()
@@ -44,7 +43,6 @@ class MapJdbcClientTest : LazyJdbcClientTest() {
     fun insertSelectUpdateDeleteOracle() {
         val ms = System.currentTimeMillis()
         val date = Date(ms)
-        val timeString = Definition.defaultDateFormat.format(date)
         client.insertInto("TEST")
                 .values(666, "a", date)
                 .values(777, "e", date)
