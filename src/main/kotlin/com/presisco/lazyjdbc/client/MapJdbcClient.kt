@@ -131,7 +131,7 @@ open class MapJdbcClient(
             if (rollbackOnBatchFailure) {
                 connection.rollback()
             }
-            throw RuntimeException("failed to insert maps", e)
+            throw SQLException("failed to insert maps on table: $tableName", e)
         } finally {
             statement.close()
             closeConnection(connection)
