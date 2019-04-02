@@ -146,9 +146,9 @@ open class MapJdbcClient(
         executeBatch(tableName, buildInsertSql(tableName, typeMap.keys), dataList, typeMap)
     }
 
-    fun insert(tableName: String, vararg fields: Pair<String, Any?>) = insert(tableName, listOf(mapOf(*fields))).first()
+    fun insert(tableName: String, vararg fields: Pair<String, Any?>) = insert(tableName, listOf(mapOf(*fields)))
 
-    fun insert(tableName: String, data: Map<String, Any?>) = insert(tableName, listOf(data)).first()
+    fun insert(tableName: String, data: Map<String, Any?>) = insert(tableName, listOf(data))
 
     override fun replace(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
         setOf()
