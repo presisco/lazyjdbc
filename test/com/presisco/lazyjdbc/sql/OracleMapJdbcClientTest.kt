@@ -5,7 +5,7 @@ import org.junit.Before
 import org.junit.Test
 import kotlin.test.expect
 
-class OracleMapJdbcClientTest : LazyJdbcClientTest() {
+class OracleMapJdbcClientTest : LazyOracleTestClient() {
     private lateinit var client: OracleMapJdbcClient
 
     @Before
