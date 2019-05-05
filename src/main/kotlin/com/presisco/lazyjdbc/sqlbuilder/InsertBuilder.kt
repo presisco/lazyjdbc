@@ -1,8 +1,8 @@
-package sqlbuilder
+package com.presisco.lazyjdbc.sqlbuilder
 
+import com.presisco.lazyjdbc.addNotEmpty
 import com.presisco.lazyjdbc.client.MapJdbcClient
-import com.presisco.lazyjdbc.client.addNotEmpty
-import com.presisco.lazyjdbc.client.placeHolders
+import com.presisco.lazyjdbc.placeHolders
 import java.util.*
 
 class InsertBuilder(

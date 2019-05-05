@@ -1,4 +1,4 @@
-package conversion
+package com.presisco.lazyjdbc.conversion
 
 class ConversionException(
         val index: Int,

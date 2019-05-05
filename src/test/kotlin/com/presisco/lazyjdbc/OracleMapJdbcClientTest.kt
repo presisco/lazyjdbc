@@ -1,4 +1,4 @@
-package sql
+package com.presisco.lazyjdbc
 
 import com.presisco.lazyjdbc.client.OracleMapJdbcClient
 import org.junit.Before

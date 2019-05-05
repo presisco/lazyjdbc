@@ -1,9 +1,10 @@
-package sql
+package com.presisco.lazyjdbc
 
 import com.presisco.lazyjdbc.client.MapJdbcClient
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import java.util.*
+import java.time.LocalDateTime
 import kotlin.test.expect
 
 class MySQLTest : LazyMySQLTestClient() {
@@ -18,8 +19,9 @@ class MySQLTest : LazyMySQLTestClient() {
     }
 
     @Test
-    fun querySequence() {
-        val timeString = client.dateFormat.format(Date(System.currentTimeMillis()))
+    fun timestampStringConversion() {
+        val localDateTime = LocalDateTime.now()
+        val timeString = client.dateFormat.format(localDateTime)
         println("created: $timeString")
         client.insert("times", mapOf("time" to timeString))
         val selected = client.buildSelect("time")
@@ -28,10 +30,28 @@ class MySQLTest : LazyMySQLTestClient() {
                 .map { it["time"] }
                 .first()
         println("selected: $selected")
-        expect(timeString) { client.dateFormat.format(selected) }
+        expect(localDateTime) {
+            selected
+        }
     }
 
-    //@After
+    @Test
+    fun timestampLocalDateTimeConversion() {
+        val localDateTime = LocalDateTime.now()
+        println("created: $localDateTime")
+        client.insert("times", mapOf("time" to localDateTime))
+        val selected = client.buildSelect("time")
+                .from("times")
+                .execute()
+                .map { it["time"] }
+                .first()
+        println("selected: $selected")
+        expect(localDateTime) {
+            selected
+        }
+    }
+
+    @After
     fun cleanup() {
         client.executeSQL("drop table times")
     }

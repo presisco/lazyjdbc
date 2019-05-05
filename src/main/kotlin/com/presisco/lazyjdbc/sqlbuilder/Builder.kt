@@ -1,4 +1,4 @@
-package sqlbuilder
+package com.presisco.lazyjdbc.sqlbuilder
 
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import java.util.*

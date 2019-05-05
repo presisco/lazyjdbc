@@ -1,8 +1,9 @@
-package com.presisco.lazyjdbc.client
+package com.presisco.lazyjdbc
 
-import com.presisco.lazyjdbc.sqlbuilder.Condition
-import com.presisco.lazyjdbc.sqlbuilder.Table
-import sqlbuilder.EmptyCondition
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
 
 fun StringBuilder.appendNotEmpty(before: String = "", text: String, after: String = ""): StringBuilder {
     if (text.isNotEmpty()) {
@@ -34,22 +35,8 @@ fun Collection<String>.fieldJoin(wrap: (String) -> String, separator: String = "
 
 fun Array<out String>.fieldJoin(wrap: (String) -> String, separator: String = ", ") = this.joinToString(separator = separator, transform = wrap)
 
-fun table(original: String) = Table(original)
+fun String.toSystemMs(format: DateTimeFormatter = defaultTimeStampFormat) = LocalDateTime.parse(this, format).toSystemMs()
 
-fun condition(left: Any, compare: String, right: Any?) = Condition(left, compare, right)
+fun LocalDateTime.toSystemMs() = this.toInstant(OffsetDateTime.now().offset).toEpochMilli()
 
-fun conditionNotNull(left: Any, compare: String, right: Any?) = if (right == null) EmptyCondition else condition(left, compare, right)
-
-fun condition(condition: Condition) = Condition(condition)
-
-fun placeHolders(count: Int, separator: String = ", "): String {
-    if (count < 1) {
-        return ""
-    }
-    val builder = StringBuilder("?")
-    var index = 1
-    while (index++ < count) {
-        builder.append(separator).append("?")
-    }
-    return builder.toString()
-}
+fun Long.toLocalDateTime() = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), systemZoneId)

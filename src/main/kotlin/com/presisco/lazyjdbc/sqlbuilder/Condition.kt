@@ -1,7 +1,6 @@
 package com.presisco.lazyjdbc.sqlbuilder
 
-import com.presisco.lazyjdbc.client.placeHolders
-import sqlbuilder.SelectBuilder
+import com.presisco.lazyjdbc.placeHolders
 
 open class Condition(
         private val left: Any,

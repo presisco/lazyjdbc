@@ -1,4 +1,4 @@
-package com.presisco.lazyjdbc.convertion
+package com.presisco.lazyjdbc.conversion
 
 import java.sql.PreparedStatement
 

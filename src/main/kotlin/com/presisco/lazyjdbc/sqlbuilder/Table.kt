@@ -1,8 +1,7 @@
 package com.presisco.lazyjdbc.sqlbuilder
 
-import com.presisco.lazyjdbc.client.addNotEmpty
-import com.presisco.lazyjdbc.client.addWith
-import sqlbuilder.SelectBuilder
+import com.presisco.lazyjdbc.addNotEmpty
+import com.presisco.lazyjdbc.addWith
 
 class Table(
         val original: Any,

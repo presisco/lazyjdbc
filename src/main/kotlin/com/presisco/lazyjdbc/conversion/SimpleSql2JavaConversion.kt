@@ -1,9 +1,8 @@
-package com.presisco.lazyjdbc.convertion
+package com.presisco.lazyjdbc.conversion
 
-import conversion.ConversionException
+import com.presisco.lazyjdbc.toLocalDateTime
 import java.sql.ResultSet
 import java.sql.Types
-import java.util.*
 
 class SimpleSql2JavaConversion : Sql2Java {
 
@@ -33,9 +32,9 @@ class SimpleSql2JavaConversion : Sql2Java {
                     Types.BIT -> getByte(index)
                     Types.BINARY, Types.VARBINARY, Types.LONGVARBINARY -> getBytes(index)
 
-                    Types.DATE -> Date(getDate(index).time)
-                    Types.TIME -> Date(getTime(index).time)
-                    Types.TIMESTAMP -> Date(getTimestamp(index).time)
+                    Types.DATE -> getDate(index).time.toLocalDateTime()
+                    Types.TIME -> getTime(index).time.toLocalDateTime()
+                    Types.TIMESTAMP -> getTimestamp(index).time.toLocalDateTime()
                     else -> throw ConversionException(index, null, columnSqlType, "type for column ${metaData.getColumnName(index)} not supported.")
                 }
             }

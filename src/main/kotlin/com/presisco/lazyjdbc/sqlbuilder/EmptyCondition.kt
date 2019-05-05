@@ -1,6 +1,4 @@
-package sqlbuilder
-
-import com.presisco.lazyjdbc.sqlbuilder.Condition
+package com.presisco.lazyjdbc.sqlbuilder
 
 object EmptyCondition : Condition("", "", null) {
 

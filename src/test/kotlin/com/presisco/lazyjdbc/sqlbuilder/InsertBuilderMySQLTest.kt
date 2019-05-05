@@ -1,13 +1,13 @@
-package sql.sqlbuilder
+package com.presisco.lazyjdbc.sqlbuilder
 
+import com.presisco.lazyjdbc.LazyMySQLTestClient
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import org.junit.Test
-import sql.LazyJdbcClientTest
 import java.util.*
 import kotlin.test.expect
 
-class InsertBuilderTest : LazyJdbcClientTest() {
-    val client = MapJdbcClient(getDataSource())
+class InsertBuilderMySQLTest : LazyMySQLTestClient() {
+    private val client = MapJdbcClient(getDataSource())
 
     @Test
     fun blindInsert() {
@@ -15,7 +15,7 @@ class InsertBuilderTest : LazyJdbcClientTest() {
         val builder = client.insertInto("names")
                 .values("james", 18, date)
                 .values("bob", 16, date)
-        expect("insert into \"names\"\n" +
+        expect("insert into `names`\n" +
                 "values (?, ?, ?), (?, ?, ?)") { builder.toSQL() }
         expect(listOf<Any?>("james", 18, date, "bob", 16, date)) { builder.params }
     }
@@ -27,8 +27,8 @@ class InsertBuilderTest : LazyJdbcClientTest() {
                 .columns("name", "age", "time")
                 .values("james", 18, date)
                 .values("bob", 16, date)
-        expect("insert into \"names\"\n" +
-                "(\"name\", \"age\", \"time\")\n" +
+        expect("insert into `names`\n" +
+                "(`name`, `age`, `time`)\n" +
                 "values (?, ?, ?), (?, ?, ?)") { builder.toSQL() }
         expect(listOf<Any?>("james", 18, date, "bob", 16, date)) { builder.params }
     }
@@ -40,11 +40,11 @@ class InsertBuilderTest : LazyJdbcClientTest() {
                 .select(client.buildSelect("name", "age", "time")
                         .from("names")
                         .where("names", "=", "james"))
-        expect("insert into \"names\"\n" +
-                "(\"name\", \"age\", \"time\")\n" +
-                "select \"name\", \"age\", \"time\"\n" +
-                "from \"names\"\n" +
-                "where \"names\" = ?") { builder.toSQL() }
+        expect("insert into `names`\n" +
+                "(`name`, `age`, `time`)\n" +
+                "select `name`, `age`, `time`\n" +
+                "from `names`\n" +
+                "where `names` = ?") { builder.toSQL() }
         expect(listOf<Any?>("james")) { builder.params }
 
     }

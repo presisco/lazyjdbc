@@ -1,11 +1,11 @@
-package sql.sqlbuilder
+package com.presisco.lazyjdbc.sqlbuilder
 
+import com.presisco.lazyjdbc.LazyOracleTestClient
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import org.junit.Test
-import sql.LazyJdbcClientTest
 import kotlin.test.expect
 
-class DeleteBuilderTest : LazyJdbcClientTest() {
+class DeleteBuilderTest : LazyOracleTestClient() {
     private val client = MapJdbcClient(getDataSource())
 
     @Test

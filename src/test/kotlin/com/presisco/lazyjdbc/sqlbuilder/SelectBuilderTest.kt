@@ -1,21 +1,15 @@
-package sql.sqlbuilder
+package com.presisco.lazyjdbc.sqlbuilder
 
+import com.presisco.lazyjdbc.LazyOracleTestClient
 import com.presisco.lazyjdbc.client.MapJdbcClient
-import com.presisco.lazyjdbc.client.condition
-import com.presisco.lazyjdbc.client.conditionNotNull
-import com.presisco.lazyjdbc.client.table
+import com.presisco.lazyjdbc.condition
+import com.presisco.lazyjdbc.conditionNotNull
+import com.presisco.lazyjdbc.table
 import org.junit.Before
 import org.junit.Test
-import sql.LazyJdbcClientTest
 import kotlin.test.expect
 
-class SelectBuilderTest : LazyJdbcClientTest(
-        "dataSourceClassName" to "oracle.jdbc.pool.OracleDataSource",
-        "dataSource.url" to "jdbc:oracle:thin:@//192.168.1.201:1521/XE",
-        "dataSource.user" to "SAMPLE",
-        "dataSource.password" to "sample",
-        "maximumPoolSize" to "1"
-) {
+class SelectBuilderTest : LazyOracleTestClient() {
     private lateinit var client: MapJdbcClient
 
     @Before
@@ -25,9 +19,9 @@ class SelectBuilderTest : LazyJdbcClientTest(
 
     @Test
     fun selectColumns() {
-        expect("select \"name\", \"b\".\"c\" \"d\", \"e\" as \"f\"\n" +
+        expect("select \"name\", \"b\".\"c\" \"d\", \"e\"  \"f\"\n" +
                 "from \"table\"") {
-            client.buildSelect("name", "b.c d", "e as f")
+            client.buildSelect("name", "b.c d", "e  f")
                     .from(table("table"))
                     .toSQL()
         }
@@ -37,8 +31,8 @@ class SelectBuilderTest : LazyJdbcClientTest(
     fun fromTables() {
         expect("select *\n" +
                 "from \"data_table\"\n" +
-                ", \"map_table\" as \"map\"\n" +
-                "inner join \"map_table\" as \"map\" on \"map\".\"sid\" = \"log\".\"sid\"") {
+                ", \"map_table\"  \"map\"\n" +
+                "inner join \"map_table\"  \"map\" on \"map\".\"sid\" = \"log\".\"sid\"") {
             client.buildSelect("*")
                     .from(
                             table("data_table")
@@ -78,11 +72,11 @@ class SelectBuilderTest : LazyJdbcClientTest(
                 ).groupBy("id", "age", "gender")
 
         expect("select \"a\", \"b\", \"c\"\n" +
-                "from \"log_table\" as \"log\"\n" +
-                "inner join \"map_table\" as \"map\" on \"map\".\"sid\" = \"log\".\"sid\"\n" +
+                "from \"log_table\"  \"log\"\n" +
+                "inner join \"map_table\"  \"map\" on \"map\".\"sid\" = \"log\".\"sid\"\n" +
                 "full join (select \"id\"\n" +
                 "from \"alarm_table\"\n" +
-                "where \"no\" like ?) as \"j\" on \"j\".\"id\" = \"log\".\"sid\"\n" +
+                "where \"no\" like ?)  \"j\" on \"j\".\"id\" = \"log\".\"sid\"\n" +
                 "where ((\"id\" < ?)\n" +
                 " and ((\"weight\" > ?)\n" +
                 " and ((\"gender\", \"age\") in (\n" +

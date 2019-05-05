@@ -1,4 +1,4 @@
-package sql
+package com.presisco.lazyjdbc
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource

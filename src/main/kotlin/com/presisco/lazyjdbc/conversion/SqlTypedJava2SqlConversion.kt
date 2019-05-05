@@ -1,16 +1,18 @@
-package com.presisco.lazyjdbc.convertion
+package com.presisco.lazyjdbc.conversion
 
-import conversion.ConversionException
+import com.presisco.lazyjdbc.defaultTimeStampFormat
+import com.presisco.lazyjdbc.toSystemMs
 import java.sql.PreparedStatement
 import java.sql.Time
 import java.sql.Timestamp
 import java.sql.Types.*
-import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class SqlTypedJava2SqlConversion(
         private val columnSqlTypeArray: List<Int>,
-        private val dateFormat: SimpleDateFormat = SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS")
+        private val dateFormat: DateTimeFormatter = defaultTimeStampFormat
 ) : Java2Sql {
 
     override fun bindList(data: List<*>, preparedStatement: PreparedStatement) {
@@ -23,9 +25,10 @@ class SqlTypedJava2SqlConversion(
                 } else {
 
                     fun getMs(value: Any) = when (value) {
-                        is String -> dateFormat.parse(value).time
+                        is String -> value.toSystemMs(dateFormat)
                         is Number -> value.toLong()
                         is Date -> value.time
+                        is LocalDateTime -> value.toSystemMs()
                         else -> throw ConversionException(index, value, sqlType, "Unsupported time millisecond extraction")
                     }
 

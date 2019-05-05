@@ -1,8 +1,10 @@
-package com.presisco.lazyjdbc.convertion
+package com.presisco.lazyjdbc.conversion
 
-import conversion.ConversionException
+import com.presisco.lazyjdbc.toSystemMs
 import java.sql.PreparedStatement
 import java.sql.Types.VARCHAR
+import java.time.Instant
+import java.time.LocalDateTime
 import java.util.*
 
 class SimpleJava2SqlConversion : Java2Sql {
@@ -26,6 +28,8 @@ class SimpleJava2SqlConversion : Java2Sql {
 
                     is Boolean -> setBoolean(index, value)
                     is Date -> setTimestamp(index, java.sql.Timestamp(value.time))
+                    is Instant -> setTimestamp(index, java.sql.Timestamp(value.toEpochMilli()))
+                    is LocalDateTime -> setTimestamp(index, java.sql.Timestamp(value.toSystemMs()))
                     else -> throw ConversionException(index, value, java.sql.Types.OTHER, "Unknown java type")
                 }
             }

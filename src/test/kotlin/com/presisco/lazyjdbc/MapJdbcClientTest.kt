@@ -1,10 +1,10 @@
-package sql
+package com.presisco.lazyjdbc
 
-import Definition
 import com.presisco.lazyjdbc.client.MapJdbcClient
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.test.expect
 
@@ -23,10 +23,10 @@ class MapJdbcClientTest : LazyJdbcClientTest() {
 
     @Test
     fun batchInsertOracle() {
-        println("current time: ${Definition.currentTimeString()}")
+        println("current time: ${nowTimeString()}")
         val ms = System.currentTimeMillis()
-        val date = Date(ms)
-        val timeString = Definition.defaultDateFormat.format(date)
+        val date = LocalDateTime.now()
+        val timeString = nowTimeString()
         client.insert("TEST", listOf(
                 mapOf("A" to 888.888, "B" to "message", "C" to timeString),
                 mapOf("A" to 888.888, "B" to "message", "C" to date),

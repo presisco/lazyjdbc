@@ -6,7 +6,7 @@
 
     <groupId>com.presisco</groupId>
     <artifactId>lazyjdbc</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 
     <properties>
         <kotlin.version>1.2.71</kotlin.version>
@@ -80,7 +80,7 @@
 
     <build>
         <sourceDirectory>src/main/kotlin/com/presisco/lazyjdbc</sourceDirectory>
-        <testSourceDirectory>test/com/presisco/lazyjdbc</testSourceDirectory>
+        <testSourceDirectory>src/test/kotlin/com/presisco/lazyjdbc</testSourceDirectory>
 
         <plugins>
             <plugin>

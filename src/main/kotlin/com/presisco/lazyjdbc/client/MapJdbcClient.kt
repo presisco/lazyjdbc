@@ -1,16 +1,16 @@
 package com.presisco.lazyjdbc.client
 
-import Definition
-import com.presisco.lazyjdbc.convertion.SimpleJava2SqlConversion
-import com.presisco.lazyjdbc.convertion.SimpleSql2JavaConversion
-import com.presisco.lazyjdbc.convertion.SqlTypedJava2SqlConversion
-import sqlbuilder.DeleteBuilder
-import sqlbuilder.InsertBuilder
-import sqlbuilder.SelectBuilder
-import sqlbuilder.UpdateBuilder
+import com.presisco.lazyjdbc.conversion.SimpleJava2SqlConversion
+import com.presisco.lazyjdbc.conversion.SimpleSql2JavaConversion
+import com.presisco.lazyjdbc.conversion.SqlTypedJava2SqlConversion
+import com.presisco.lazyjdbc.defaultTimeStampFormat
+import com.presisco.lazyjdbc.sqlbuilder.DeleteBuilder
+import com.presisco.lazyjdbc.sqlbuilder.InsertBuilder
+import com.presisco.lazyjdbc.sqlbuilder.SelectBuilder
+import com.presisco.lazyjdbc.sqlbuilder.UpdateBuilder
 import java.sql.SQLException
 import java.sql.Statement
-import java.text.SimpleDateFormat
+import java.time.format.DateTimeFormatter
 import javax.sql.DataSource
 
 open class MapJdbcClient(
@@ -24,11 +24,11 @@ open class MapJdbcClient(
 ) {
     private val sql2Java = SimpleSql2JavaConversion()
     private val sqlTypeCache = HashMap<String, HashMap<String, Int>>()
-    var dateFormat = Definition.defaultDateFormat
+    var dateFormat = defaultTimeStampFormat
 
     fun buildSelect(vararg columns: String) = SelectBuilder(this).select(*columns)
 
-    fun withDateFormat(format: SimpleDateFormat): MapJdbcClient {
+    fun withDateFormat(format: DateTimeFormatter): MapJdbcClient {
         dateFormat = format
         return this
     }

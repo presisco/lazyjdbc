@@ -1,9 +1,8 @@
-package sql.sqlbuilder
+package com.presisco.lazyjdbc.sqlbuilder
 
-import com.presisco.lazyjdbc.client.condition
-import com.presisco.lazyjdbc.client.conditionNotNull
+import com.presisco.lazyjdbc.condition
+import com.presisco.lazyjdbc.conditionNotNull
 import org.junit.Test
-import sqlbuilder.EmptyCondition
 import java.util.*
 import kotlin.test.expect
 
@@ -14,7 +13,7 @@ class ConditionTest {
     fun emptyCondition() {
         expect(EmptyCondition) { conditionNotNull("name", "=", null) }
         val params = LinkedList<Any?>()
-        var condition = condition("age", ">", 18)
+        val condition = condition("age", ">", 18)
                 .andNotNull("gender", "in", null)
         expect("`age` > ?") { condition.toSQL(wrap, params) }
         expect(listOf<Any?>(18)) { params }

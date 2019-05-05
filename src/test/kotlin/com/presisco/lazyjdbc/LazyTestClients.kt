@@ -1,4 +1,4 @@
-package sql
+package com.presisco.lazyjdbc
 
 abstract class LazyOracleTestClient : LazyJdbcClientTest(
         "dataSourceClassName" to "oracle.jdbc.pool.OracleDataSource",
@@ -11,7 +11,7 @@ abstract class LazyOracleTestClient : LazyJdbcClientTest(
 abstract class LazyMySQLTestClient : LazyJdbcClientTest(
         "dataSourceClassName" to "com.mysql.cj.jdbc.MysqlDataSource",
         "dataSource.url" to "jdbc:mysql://192.168.1.202:3306/sample?useUnicode=true&characterEncoding=utf-8",
-        "dataSource.user" to "sample",
-        "dataSource.password" to "sample",
+        "dataSource.user" to "root",
+        "dataSource.password" to "root",
         "maximumPoolSize" to "5"
 )

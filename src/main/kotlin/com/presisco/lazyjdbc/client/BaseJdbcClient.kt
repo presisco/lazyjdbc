@@ -1,6 +1,8 @@
 package com.presisco.lazyjdbc.client
 
-import com.presisco.lazyjdbc.convertion.SimpleJava2SqlConversion
+import com.presisco.lazyjdbc.conversion.SimpleJava2SqlConversion
+import com.presisco.lazyjdbc.fieldJoin
+import com.presisco.lazyjdbc.placeHolders
 import java.sql.Connection
 import java.sql.SQLException
 import javax.sql.DataSource
