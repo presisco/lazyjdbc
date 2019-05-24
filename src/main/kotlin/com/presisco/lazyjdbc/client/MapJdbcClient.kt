@@ -91,24 +91,19 @@ open class MapJdbcClient(
         return resultList
     }
 
-    fun executeBatch(tableName: String, sql: String, dataList: List<Map<String, Any?>>, columnTypeMap: Map<String, Int>): Set<Int> {
+    fun executeBatch(buildSql: (columns: Collection<String>) -> String, dataList: List<Map<String, Any?>>, columnTypeMap: Map<String, Int>): Set<Int> {
         val failedSet = HashSet<Int>()
 
         val columnList = columnTypeMap.keys.toList()
         val sqlTypeList = columnTypeMap.values.toList()
 
         val connection = getConnection()
-        val statement = connection.prepareStatement(sql)
+        val statement = connection.prepareStatement(buildSql(columnList))
         val sortedDataRow = ArrayList<Any?>(columnList.size)
         val java2sql = SqlTypedJava2SqlConversion(sqlTypeList, dateFormat)
 
         try {
             dataList.forEach { map ->
-                val columnMismatchSet = map.keys.minus(columnList)
-                if (columnMismatchSet.isNotEmpty()) {
-                    throw IllegalStateException("column type map mismatch for $tableName, missed $columnMismatchSet")
-                }
-
                 for (column in columnList) {
                     sortedDataRow.add(map[column])
                 }
@@ -131,7 +126,7 @@ open class MapJdbcClient(
             if (rollbackOnBatchFailure) {
                 connection.rollback()
             }
-            throw SQLException("failed to insert maps on table: $tableName", e)
+            throw e
         } finally {
             statement.close()
             closeConnection(connection)
@@ -139,11 +134,27 @@ open class MapJdbcClient(
         return failedSet
     }
 
+    fun buildTypeMapSubset(tableName: String, dataList: List<Map<String, Any?>>): Map<String, Int> {
+        val typeMap = getColumnTypeMap(tableName)
+        val keySet = hashSetOf<String>()
+        dataList.forEach {
+            keySet.addAll(it.keys)
+        }
+        val columnMismatchSet = keySet.minus(typeMap.keys)
+        if (columnMismatchSet.isNotEmpty()) {
+            throw IllegalStateException("column $columnMismatchSet not defined in $tableName")
+        }
+        return typeMap.filterKeys { keySet.contains(it) }
+    }
+
     override fun insert(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
         setOf()
     } else {
-        val typeMap = getColumnTypeMap(tableName)
-        executeBatch(tableName, buildInsertSql(tableName, typeMap.keys), dataList, typeMap)
+        try {
+            executeBatch({ buildInsertSql(tableName, it) }, dataList, buildTypeMapSubset(tableName, dataList))
+        } catch (e: SQLException) {
+            throw SQLException("insert failed on table: $tableName", e)
+        }
     }
 
     fun insert(tableName: String, vararg fields: Pair<String, Any?>) = insert(tableName, listOf(mapOf(*fields)))
@@ -153,8 +164,11 @@ open class MapJdbcClient(
     override fun replace(tableName: String, dataList: List<Map<String, Any?>>) = if (dataList.isEmpty()) {
         setOf()
     } else {
-        val typeMap = getColumnTypeMap(tableName)
-        executeBatch(tableName, buildReplaceSql(tableName, typeMap.keys), dataList, typeMap)
+        try {
+            executeBatch({ buildReplaceSql(tableName, it) }, dataList, buildTypeMapSubset(tableName, dataList))
+        } catch (e: SQLException) {
+            throw SQLException("replace failed on table: $tableName", e)
+        }
     }
 
     override fun delete(sql: String, vararg params: Any) = executeSQL(sql, *params)
