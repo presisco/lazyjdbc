@@ -98,7 +98,8 @@ open class MapJdbcClient(
         val sqlTypeList = columnTypeMap.values.toList()
 
         val connection = getConnection()
-        val statement = connection.prepareStatement(buildSql(columnList))
+        val sql = buildSql(columnList)
+        val statement = connection.prepareStatement(sql)
         val sortedDataRow = ArrayList<Any?>(columnList.size)
         val java2sql = SqlTypedJava2SqlConversion(sqlTypeList, dateFormat)
 

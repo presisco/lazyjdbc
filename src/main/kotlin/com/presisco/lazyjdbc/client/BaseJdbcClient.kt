@@ -23,7 +23,7 @@ abstract class BaseJdbcClient<T>(
         databaseVersion = metaData.databaseProductVersion
         wrapper = when (databaseName) {
             "mysql" -> "`"
-            "oracle" -> "\""
+            "oracle", "sqlite" -> "\""
             else -> ""
         }
         closeConnection(connection)

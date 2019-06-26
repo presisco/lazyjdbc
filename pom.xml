@@ -6,7 +6,7 @@
 
     <groupId>com.presisco</groupId>
     <artifactId>lazyjdbc</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.2</version>
 
     <properties>
         <kotlin.version>1.2.71</kotlin.version>
@@ -53,13 +53,6 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>3.2.0</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.oracle.jdbc</groupId>
-            <artifactId>ojdbc6</artifactId>
-            <version>11.1.0.6.0</version>
             <scope>test</scope>
         </dependency>
 
