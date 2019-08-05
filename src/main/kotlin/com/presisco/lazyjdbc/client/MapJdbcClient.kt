@@ -60,14 +60,12 @@ open class MapJdbcClient(
         return columnTypeMap
     }
 
-    override fun select(sql: String, vararg params: Any): List<Map<String, Any?>> {
-        val resultList = ArrayList<Map<String, Any?>>()
+    fun selectIterator(sql: String, vararg params: Any): Iterator<Map<String, *>> {
         val connection = getConnection()
         val statement = connection.prepareStatement(sql)
         try {
             SimpleJava2SqlConversion().bindList(params.toList(), statement)
             val resultSet = statement.executeQuery()
-
             val metadata = resultSet.metaData
             val columnNameArray = Array(metadata.columnCount, { "" })
             with(resultSet.metaData) {
@@ -75,19 +73,45 @@ open class MapJdbcClient(
                     columnNameArray[i - 1] = metadata.getColumnName(i)
                 }
             }
-            while (resultSet.next()) {
-                val map = HashMap<String, Any?>()
-                val row = sql2Java.toList(resultSet)
-                columnNameArray.forEachIndexed { index, name -> map[name] = row[index] }
+            return object : Iterator<Map<String, *>> {
+                override fun hasNext(): Boolean {
+                    try {
+                        if (resultSet.next()) {
+                            return true
+                        } else {
+                            closeConnection(connection)
+                            return false
+                        }
+                    } catch (e: Exception) {
+                        closeConnection(connection)
+                        throw e
+                    }
+                }
 
-                resultList.add(map)
+                override fun next(): Map<String, Any?> {
+                    try {
+                        val map = HashMap<String, Any?>()
+                        val row = sql2Java.toList(resultSet)
+                        columnNameArray.forEachIndexed { index, name -> map[name] = row[index] }
+                        return map
+                    } catch (e: Exception) {
+                        closeConnection(connection)
+                        throw e
+                    }
+                }
             }
         } catch (e: Exception) {
             throw e
-        } finally {
-            statement.close()
-            closeConnection(connection)
         }
+    }
+
+    override fun select(sql: String, vararg params: Any): List<Map<String, Any?>> {
+        val resultList = ArrayList<Map<String, Any?>>()
+
+        val iterator = selectIterator(sql, *params)
+
+        iterator.forEach { resultList.add(it) }
+
         return resultList
     }
 
