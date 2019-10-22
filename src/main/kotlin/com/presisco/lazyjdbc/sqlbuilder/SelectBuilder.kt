@@ -82,6 +82,6 @@ class SelectBuilder(
             .addNotEmpty("order by ", orderBy)
             .joinToString("\n")
 
-    fun execute() = client.select(toSQL(), *params.toArray())
+    fun execute() = client.select(toSQL(), params = *params.toArray())
 
 }

@@ -60,14 +60,19 @@ open class MapJdbcClient(
         return columnTypeMap
     }
 
-    fun selectIterator(sql: String, vararg params: Any): Iterator<Map<String, *>> {
+    fun selectIterator(sql: String, vararg params: Any) = selectIterator(1, sql, *params)
+
+    fun selectIterator(fetchSize: Int, sql: String, vararg params: Any): Iterator<Map<String, *>> {
         val connection = getConnection()
         val statement = connection.prepareStatement(sql)
+        if (fetchSize != -1) {
+            statement.fetchSize = fetchSize
+        }
         try {
             SimpleJava2SqlConversion().bindList(params.toList(), statement)
             val resultSet = statement.executeQuery()
             val metadata = resultSet.metaData
-            val columnNameArray = Array(metadata.columnCount, { "" })
+            val columnNameArray = Array(metadata.columnCount) { "" }
             with(resultSet.metaData) {
                 for (i in 1..columnCount) {
                     columnNameArray[i - 1] = metadata.getColumnName(i)
@@ -108,7 +113,7 @@ open class MapJdbcClient(
     override fun select(sql: String, vararg params: Any): List<Map<String, Any?>> {
         val resultList = ArrayList<Map<String, Any?>>()
 
-        val iterator = selectIterator(sql, *params)
+        val iterator = selectIterator(fetchSize = -1, sql = sql, params = *params)
 
         iterator.forEach { resultList.add(it) }
 
