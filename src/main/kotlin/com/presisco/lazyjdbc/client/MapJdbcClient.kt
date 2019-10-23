@@ -8,6 +8,7 @@ import com.presisco.lazyjdbc.sqlbuilder.DeleteBuilder
 import com.presisco.lazyjdbc.sqlbuilder.InsertBuilder
 import com.presisco.lazyjdbc.sqlbuilder.SelectBuilder
 import com.presisco.lazyjdbc.sqlbuilder.UpdateBuilder
+import java.sql.ResultSet
 import java.sql.SQLException
 import java.sql.Statement
 import java.time.format.DateTimeFormatter
@@ -60,13 +61,17 @@ open class MapJdbcClient(
         return columnTypeMap
     }
 
-    fun selectIterator(sql: String, vararg params: Any) = selectIterator(1, sql, *params)
+    fun selectIterator(sql: String, vararg params: Any) = selectIterator(true, sql, *params)
 
-    fun selectIterator(fetchSize: Int, sql: String, vararg params: Any): Iterator<Map<String, *>> {
+    fun selectIterator(stream: Boolean = false, sql: String, vararg params: Any): Iterator<Map<String, *>> {
         val connection = getConnection()
-        val statement = connection.prepareStatement(sql)
-        if (fetchSize != -1) {
-            statement.fetchSize = fetchSize
+        val statement = if (stream) {
+            val streamStatement =
+                connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
+            streamStatement.fetchSize = Integer.MIN_VALUE
+            streamStatement
+        } else {
+            connection.prepareStatement(sql)
         }
         try {
             SimpleJava2SqlConversion().bindList(params.toList(), statement)
@@ -113,7 +118,7 @@ open class MapJdbcClient(
     override fun select(sql: String, vararg params: Any): List<Map<String, Any?>> {
         val resultList = ArrayList<Map<String, Any?>>()
 
-        val iterator = selectIterator(fetchSize = -1, sql = sql, params = *params)
+        val iterator = selectIterator(stream = false, sql = sql, params = *params)
 
         iterator.forEach { resultList.add(it) }
 
