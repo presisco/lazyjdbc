@@ -61,14 +61,14 @@ open class MapJdbcClient(
         return columnTypeMap
     }
 
-    fun selectIterator(sql: String, vararg params: Any) = selectIterator(true, sql, *params)
+    fun selectIterator(sql: String, vararg params: Any) = selectIterator(1, sql, *params)
 
-    fun selectIterator(stream: Boolean = false, sql: String, vararg params: Any): Iterator<Map<String, *>> {
+    fun selectIterator(fetchSize: Int, sql: String, vararg params: Any): Iterator<Map<String, *>> {
         val connection = getConnection()
-        val statement = if (stream) {
+        val statement = if (fetchSize < 2) {
             val streamStatement =
                 connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)
-            streamStatement.fetchSize = Integer.MIN_VALUE
+            streamStatement.fetchSize = fetchSize
             streamStatement
         } else {
             connection.prepareStatement(sql)
@@ -118,7 +118,7 @@ open class MapJdbcClient(
     override fun select(sql: String, vararg params: Any): List<Map<String, Any?>> {
         val resultList = ArrayList<Map<String, Any?>>()
 
-        val iterator = selectIterator(stream = false, sql = sql, params = *params)
+        val iterator = selectIterator(2, sql = sql, params = *params)
 
         iterator.forEach { resultList.add(it) }
 
