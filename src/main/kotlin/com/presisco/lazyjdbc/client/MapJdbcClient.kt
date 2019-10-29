@@ -125,10 +125,14 @@ open class MapJdbcClient(
         return resultList
     }
 
-    fun executeBatch(buildSql: (columns: Collection<String>) -> String, dataList: List<Map<String, Any?>>, columnTypeMap: Map<String, Int>): Set<Int> {
+    fun executeBatch(buildSql: (columns: Collection<String>) -> String, dataList: List<Map<String, Any?>>, columnTypeMap: Map<String, Int>, columnOrder: List<String> = listOf()): Set<Int> {
         val failedSet = HashSet<Int>()
 
-        val columnList = columnTypeMap.keys.toList()
+        val columnList = if (columnOrder.isEmpty()) {
+            columnTypeMap.keys.toList()
+        } else {
+            columnOrder
+        }
         val sqlTypeList = columnTypeMap.values.toList()
 
         val connection = getConnection()
